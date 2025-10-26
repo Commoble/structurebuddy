@@ -1,0 +1,22 @@
+{
+	"fallback": "structurebuddy:empty",
+	"elements": [
+		{
+			"data": {
+				"type": "structurebuddy:test",
+				"blocks": "#wool",
+				"jigsaw_name": "structurebuddy:joint",
+				"target_pool": "structurebuddy:test",
+				"target_jigsaw_name": "structurebuddy:joint"
+			},
+			"weight": 5
+		},
+		{
+			"data": {
+				"type": "structurebuddy:subpool",
+				"value": "structurebuddy:stairs"
+			},
+			"weight": 1
+		}
+	]
+}

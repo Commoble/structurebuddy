@@ -1,0 +1,33 @@
+{
+	"elements": [
+		{
+			"data": {
+				"type": "structurebuddy:structure_template",
+				"location": "structurebuddy:stairs3"
+			},
+			"weight": 1
+		},
+		{
+			"data": {
+				"type": "structurebuddy:structure_template",
+				"location": "structurebuddy:stairs5"
+			},
+			"weight": 1
+		},
+		{
+			"data": {
+				"type": "structurebuddy:structure_template",
+				"location": "structurebuddy:stairs7"
+			},
+			"weight": 1
+		},
+		{
+			"data": {
+				"type": "structurebuddy:feature",
+				"feature": "birch",
+				"jigsaw_name": "structurebuddy:joint"
+			},
+			"weight": 1
+		}
+	]
+}
