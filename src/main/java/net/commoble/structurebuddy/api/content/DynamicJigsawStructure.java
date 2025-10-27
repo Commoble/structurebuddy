@@ -2,7 +2,6 @@ package net.commoble.structurebuddy.api.content;
 
 import java.util.Optional;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -22,6 +21,7 @@ import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pools.DimensionPadding;
+import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure.MaxDistance;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
@@ -43,7 +43,8 @@ public class DynamicJigsawStructure extends Structure
 	 * 7 is common for vanilla structures but can be bigger due to our more efficient algorithm.
 	 * @param startHeight HeightProvider determining where to place the floor of the first piece. Ignored if projectStartToHeightmap is present.
 	 * @param projectStartToHeightmap Optional HeightMap; if present, floor of first piece is placed at given heightmap and startHeight is ignored.
-	 * @param maxDistanceFromCenter int radius of the cuboid which the entire structure tree can generate within.
+	 * @param maxDistanceFromCenter MaxDistance defining the horizontal and vertical radii of the cuboid which the entire structure tree can generate within.
+	 * Horizontal distance has a max of 128 (8 chunks away from origin chunk in all directions, so 17x17 square chunks)
 	 * @param dimensionPadding DimensionPadding indicating the minimum distance the structure can generate from the top or bottom of the world.
 	 * @param liquidSettings LiquidSettings indicating whether the structure's generated blocks should inherit waterloggedness from existing blocks in the world.
 	 */
@@ -52,7 +53,7 @@ public class DynamicJigsawStructure extends Structure
 		int size,
 		HeightProvider startHeight,
 		Optional<Heightmap.Types> projectStartToHeightmap,
-		int maxDistanceFromCenter,
+		MaxDistance maxDistanceFromCenter,
 //		List<PoolAliasBinding> poolAliases, // not currently used
 		DimensionPadding dimensionPadding,
 		LiquidSettings liquidSettings) {}
@@ -71,7 +72,7 @@ public class DynamicJigsawStructure extends Structure
 			ExtraCodecs.NON_NEGATIVE_INT.fieldOf("size").forGetter(DynamicJigsawStructureParams::size),
 			HeightProvider.CODEC.fieldOf("start_height").forGetter(DynamicJigsawStructureParams::startHeight),
 			Heightmap.Types.CODEC.optionalFieldOf("project_start_to_heightmap").forGetter(DynamicJigsawStructureParams::projectStartToHeightmap),
-			Codec.intRange(1, 128).fieldOf("max_distance_from_center").forGetter(DynamicJigsawStructureParams::maxDistanceFromCenter),
+			MaxDistance.CODEC.fieldOf("max_distance_from_center").forGetter(DynamicJigsawStructureParams::maxDistanceFromCenter),
 //			Codec.list(PoolAliasBinding.CODEC).optionalFieldOf("pool_aliases", List.of()).forGetter(DynamicJigsawStructureParams::poolAliases),
 			DimensionPadding.CODEC.optionalFieldOf("dimension_padding", DimensionPadding.ZERO).forGetter(DynamicJigsawStructureParams::dimensionPadding),
 			LiquidSettings.CODEC.optionalFieldOf("liquid_settings", LiquidSettings.IGNORE_WATERLOGGING).forGetter(DynamicJigsawStructureParams::liquidSettings))
@@ -90,7 +91,7 @@ public class DynamicJigsawStructure extends Structure
 			"size": 7, // Iteration depth of jigsaw tree. 7 is common vanilla default. If 0, only fallback pools will generate. More size = structure takes longer to generate
 			"start_height": 0, // ignored if project_start_to_hightmap is used. See HeightProvider codec if this is to be used
 			"project_start_to_heightmap": "WORLD_SURFACE_WG", // if present, starts structure at that heightmap and ignores start_height
-			"max_distance_from_center": 80, // range of [1, 128], vanilla commonly uses 80 or 116 in jigsaw structures
+			"max_distance_from_center": 80, // range of [1, 128], vanilla commonly uses 80 or 116 in jigsaw structures, can also specify {"horizontal": x, "vertical": y}
 			"dimension_paddIng": 5, // optional, defaults to zero if not present; prevents structure from spawning too close to top/bottom of world
 			"liquid_settings": "apply_waterlogging" // optional, defaults to "ignore_waterlogging" if not present
 		}

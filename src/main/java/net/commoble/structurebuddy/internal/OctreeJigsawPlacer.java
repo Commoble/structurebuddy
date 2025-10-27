@@ -43,6 +43,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.Structure.GenerationContext;
 import net.minecraft.world.level.levelgen.structure.pools.DimensionPadding;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
+import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure.MaxDistance;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
@@ -119,9 +120,15 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			int maxDepth = params.size();
 			if (maxDepth > 0)
 			{
-				int maxDistanceFromCenter = params.maxDistanceFromCenter();
+				MaxDistance maxDistanceFromCenter = params.maxDistanceFromCenter();
 				OctreeJigsawPlacer placer = new OctreeJigsawPlacer(templatePools, maxDepth, chunkGenerator, structureTemplateManager, pieces, rand, new PriorityQueue<>());
-				BoundingBox totalBounds = new BoundingBox(centerX-maxDistanceFromCenter, startHeight-maxDistanceFromCenter, centerZ-maxDistanceFromCenter, centerX+maxDistanceFromCenter, startHeight+maxDistanceFromCenter, centerZ+maxDistanceFromCenter);
+				BoundingBox totalBounds = new BoundingBox(
+					centerX-maxDistanceFromCenter.horizontal(),
+					Math.max(startHeight-maxDistanceFromCenter.vertical(), heightAccessor.getMinY() + dimensionPadding.bottom()),
+					centerZ-maxDistanceFromCenter.horizontal(),
+					centerX+maxDistanceFromCenter.horizontal(),
+					Math.min(startHeight+maxDistanceFromCenter.vertical(), heightAccessor.getMaxY() - dimensionPadding.top()),
+					centerZ+maxDistanceFromCenter.horizontal());
 				SubtractiveOctree octree = new SubtractiveOctree.NonEmpty(totalBounds);
 				boolean totallySubtracted = octree.subtract(startBounds);
 				if (totallySubtracted)
