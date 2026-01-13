@@ -8,6 +8,7 @@ import java.util.Optional;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import net.commoble.structurebuddy.api.DynamicJigsawBakeContext;
 import net.commoble.structurebuddy.api.DynamicJigsawElement;
 import net.commoble.structurebuddy.api.DynamicJigsawFillContext;
 import net.commoble.structurebuddy.api.DynamicJigsawResult;

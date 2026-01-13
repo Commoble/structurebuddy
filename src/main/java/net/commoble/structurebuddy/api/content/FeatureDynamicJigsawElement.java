@@ -2,6 +2,7 @@ package net.commoble.structurebuddy.api.content;
 
 import java.util.List;
 
+import org.apache.commons.lang3.function.Consumers;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -9,6 +10,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import net.commoble.structurebuddy.api.DynamicJigsawBakeContext;
 import net.commoble.structurebuddy.api.DynamicJigsawElement;
 import net.commoble.structurebuddy.api.DynamicJigsawFillContext;
 import net.commoble.structurebuddy.api.DynamicJigsawResult;
@@ -87,7 +89,7 @@ public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature
 			this.jigsawName);
 		// would be nice if we could configure this to generate before or after other pieces
 		// but placement priority only affects jigsaw assembling for child jigsaws, of which we have none, not adding-blocks-to-chunks
-		return new DynamicJigsawResult(pieceFiller, boundingBox, List.of(jigsaw), List.of());
+		return new DynamicJigsawResult(pieceFiller, boundingBox, List.of(jigsaw), List.of(), Consumers.nop());
 	}
 	
 	/**

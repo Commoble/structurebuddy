@@ -2,6 +2,9 @@ package net.commoble.structurebuddy.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+
+import org.apache.commons.lang3.function.Consumers;
 
 import net.commoble.structurebuddy.api.content.EmptyPieceFiller;
 import net.minecraft.core.BlockPos;
@@ -38,11 +41,18 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
  * otherwise otherwise-valid connections may be unexpectedly rejected.
  * A connection to child can be in the same position as a connection to parent,
  * if connection to parent becomes used then connection to child at that pos will just be ignored.
+ * @param onSelected Consumer to apply modifications to shared jigsaw piece data,
+ * which will run if these results are selected to add a piece to the structure.
  */
-public record DynamicJigsawResult(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren)
+public record DynamicJigsawResult(
+	PieceFiller pieceFiller,
+	BoundingBox localBoundingBox,
+	List<JigsawConnectionToParent> shuffledLocalConnectionsToParent,
+	List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren,
+	Consumer<JigsawDataAccess> onSelected)
 {
 	/** Empty DynamicJigsawResult indicating no piece can be created or connected**/
-	public static final DynamicJigsawResult EMPTY = new DynamicJigsawResult(EmptyPieceFiller.INSTANCE, BoundingBox.infinite(), List.of(), List.of());
+	public static final DynamicJigsawResult EMPTY = new DynamicJigsawResult(EmptyPieceFiller.INSTANCE, BoundingBox.infinite(), List.of(), List.of(), Consumers.nop());
 
 	/** minecraft:empty as a child jigsaw name indicates it should not be a child, and as a target jigsaw name of a parent indicates it should not be a parent */
 	public static final ResourceLocation EMPTY_NAME = ResourceLocation.withDefaultNamespace("empty");
@@ -63,7 +73,28 @@ public record DynamicJigsawResult(PieceFiller pieceFiller, BoundingBox localBoun
 	 */
 	public static DynamicJigsawResult withParents(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent)
 	{
-		return new DynamicJigsawResult(pieceFiller, localBoundingBox, shuffledLocalConnectionsToParent, List.of());
+		return withParents(pieceFiller, localBoundingBox, shuffledLocalConnectionsToParent, Consumers.nop());
+	}
+	
+	/**
+	 * {@return DynamicJigsawResult with parent but no children}
+	 * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+	 * and used later to fill the piece when overlapping chunks generate.
+	 * @param localBoundingBox BoundingBox of the structure piece.
+	 * Does not need to be in absolute world coordinates or any reference frame in particular,
+	 * will be moved to the correct location based on which jigsaw connector is chosen.
+	 * @param shuffledLocalConnectionsToParent List of possible jigsaw connections pointing to parent piece.
+	 * Does not need to be in absolute world coordinates,
+	 * but must be in the same reference frame relative to localBoundingBox.
+	 * Must also be contained within localBoundingBox,
+	 * otherwise otherwise-valid connections may be unexpectedly rejected.
+	 * due to optimization assumptions.
+	 * @param onSelected Consumer to apply modifications to shared jigsaw piece data,
+	 * which will run if these results are selected to add a piece to the structure.
+	 */
+	public static DynamicJigsawResult withParents(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, Consumer<JigsawDataAccess> onSelected)
+	{
+		return new DynamicJigsawResult(pieceFiller, localBoundingBox, shuffledLocalConnectionsToParent, List.of(), onSelected);
 	}
 	
 	/**
@@ -83,8 +114,31 @@ public record DynamicJigsawResult(PieceFiller pieceFiller, BoundingBox localBoun
 	 */
 	public static DynamicJigsawResult withChildren(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren)
 	{
-		return new DynamicJigsawResult(pieceFiller, localBoundingBox, List.of(), shuffledLocalConnectionsToChildren);
+		return withChildren(pieceFiller, localBoundingBox, shuffledLocalConnectionsToChildren, Consumers.nop());
 	}
+	
+	/**
+	 * {@return DynamicJigsawResult with children but no parent (only valid for start pieces)}
+	 * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+	 * and used later to fill the piece when overlapping chunks generate.
+	 * @param localBoundingBox BoundingBox of the structure piece.
+	 * Does not need to be in absolute world coordinates or any reference frame in particular,
+	 * will be moved to the correct location based on which jigsaw connector is chosen.
+	 * @param shuffledLocalConnectionsToChildren List of possible jigsaw connections pointing to child pieces.
+	 * Does not need to be in absolute world coordinates,
+	 * but must be in the same reference frame relative to localBoundingBox.
+	 * Must also be contained within localBoundingBox,
+	 * otherwise otherwise-valid connections may be unexpectedly rejected.
+	 * A connection to child can be in the same position as a connection to parent,
+	 * if connection to parent becomes used then connection to child at that pos will just be ignored.
+	 * @param onSelected Consumer to apply modifications to shared jigsaw piece data,
+	 * which will run if these results are selected to add a piece to the structure.
+	 */
+	public static DynamicJigsawResult withChildren(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren, Consumer<JigsawDataAccess> onSelected)
+	{
+		return new DynamicJigsawResult(pieceFiller, localBoundingBox, List.of(), shuffledLocalConnectionsToChildren, onSelected);
+	}
+	
 	/**
 	 * Just runs the normal constructor, but the name helps remember which order the connection list params are
 	 * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
@@ -109,7 +163,36 @@ public record DynamicJigsawResult(PieceFiller pieceFiller, BoundingBox localBoun
 	 */
 	public static DynamicJigsawResult withParentsAndChildren(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren)
 	{
-		return new DynamicJigsawResult(pieceFiller, localBoundingBox, shuffledLocalConnectionsToParent, shuffledLocalConnectionsToChildren);
+		return withParentsAndChildren(pieceFiller, localBoundingBox, shuffledLocalConnectionsToParent, shuffledLocalConnectionsToChildren, Consumers.nop());
+	}
+	
+	/**
+	 * Just runs the normal constructor, but the name helps remember which order the connection list params are
+	 * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+	 * and used later to fill the piece when overlapping chunks generate.
+	 * @param localBoundingBox BoundingBox of the structure piece.
+	 * Does not need to be in absolute world coordinates or any reference frame in particular,
+	 * will be moved to the correct location based on which jigsaw connector is chosen.
+	 * @param shuffledLocalConnectionsToParent List of possible jigsaw connections pointing to parent piece.
+	 * Does not need to be in absolute world coordinates,
+	 * but must be in the same reference frame relative to localBoundingBox.
+	 * Must also be contained within localBoundingBox,
+	 * otherwise otherwise-valid connections may be unexpectedly rejected.
+	 * due to optimization assumptions.
+	 * @param shuffledLocalConnectionsToChildren List of possible jigsaw connections pointing to child pieces.
+	 * Does not need to be in absolute world coordinates,
+	 * but must be in the same reference frame relative to localBoundingBox.
+	 * Must also be contained within localBoundingBox,
+	 * otherwise otherwise-valid connections may be unexpectedly rejected.
+	 * A connection to child can be in the same position as a connection to parent,
+	 * if connection to parent becomes used then connection to child at that pos will just be ignored.
+	 * @param onSelected Consumer to apply modifications to shared jigsaw piece data,
+	 * which will run if these results are selected to add a piece to the structure.
+	 * @return DynamicJigsawResult
+	 */
+	public static DynamicJigsawResult withParentsAndChildren(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren, Consumer<JigsawDataAccess> onSelected)
+	{
+		return new DynamicJigsawResult(pieceFiller, localBoundingBox, shuffledLocalConnectionsToParent, shuffledLocalConnectionsToChildren, onSelected);
 	}
 	
 	/**

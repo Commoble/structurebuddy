@@ -2,6 +2,7 @@ package net.commoble.structurebuddy.api.content;
 
 import com.mojang.serialization.MapCodec;
 
+import net.commoble.structurebuddy.api.DynamicJigsawBakeContext;
 import net.commoble.structurebuddy.api.DynamicJigsawElement;
 import net.commoble.structurebuddy.api.DynamicJigsawResult;
 import net.commoble.structurebuddy.api.StructureBuddy;

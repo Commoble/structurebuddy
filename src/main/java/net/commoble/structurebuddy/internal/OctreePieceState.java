@@ -12,12 +12,13 @@ import net.commoble.structurebuddy.api.content.DynamicJigsawStructurePiece;
  * @param piece DynamicJigsawStructurePiece
  * @param shuffledConnectionsToChildren List of jigsaw connections in this parent piece pointing to potential child pieces
  * @param octree SubtractiveOctree representing the remaining space that child pieces can generate in
+ * @param jigsawData JigsawData to be provided to this piece's potential child elements
  * @param depth iteration depth of this structure piece
  * @param placementPriority int indicating processing priority for this piece state relative to other unprocessed piece states (higher = sooner)
  * @param placementCounter int indicating when this piece was added to the queue (0, 1, 2, 3, etc). Used to break ties in the priority queue correctly for pieces with the same placement priority.
  */
 @ApiStatus.Internal
-public record OctreePieceState(DynamicJigsawStructurePiece piece, List<JigsawConnectionToChild> shuffledConnectionsToChildren, SubtractiveOctree octree, int depth, int placementPriority, int placementCounter) implements Comparable<OctreePieceState>
+public record OctreePieceState(DynamicJigsawStructurePiece piece, List<JigsawConnectionToChild> shuffledConnectionsToChildren, SubtractiveOctree octree, JigsawData jigsawData, int depth, int placementPriority, int placementCounter) implements Comparable<OctreePieceState>
 {
 	@Override
 	public int compareTo(OctreePieceState that)
