@@ -51,7 +51,7 @@ public record DynamicJigsawPool(
 	}
 	</pre>
 	 */
-	public static final Codec<DynamicJigsawPool> DIRECT_CODEC = Codec.recursive(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL.location().toString(), directCodec -> RecordCodecBuilder.create(builder -> builder.group(
+	public static final Codec<DynamicJigsawPool> DIRECT_CODEC = Codec.recursive(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL.identifier().toString(), directCodec -> RecordCodecBuilder.create(builder -> builder.group(
 		RegistryFileCodec.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, directCodec).optionalFieldOf("fallback").forGetter(DynamicJigsawPool::fallback),
 		WeightedList.codec(DynamicJigsawElement.CODEC).fieldOf("elements").forGetter(DynamicJigsawPool::elements)
 	).apply(builder, DynamicJigsawPool::new)));

@@ -64,7 +64,7 @@ public final class CodecBuddy
 	{
 		return Codec.lazyInitialized(() -> {
 			// eclipsec and javac need to agree on the generics, so this might look strange
-			Registry<?> uncastRegistry = BuiltInRegistries.REGISTRY.getValue(registryKey.location());
+			Registry<?> uncastRegistry = BuiltInRegistries.REGISTRY.getValue(registryKey.identifier());
 			Registry<MapCodec<? extends T>> registry = (Registry<MapCodec<? extends T>>) uncastRegistry;
 			return registry.byNameCodec().dispatch(typeCodec, Function.identity());
 		});

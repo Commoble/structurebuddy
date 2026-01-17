@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity.JointType;
 
@@ -17,14 +17,14 @@ import net.minecraft.world.level.block.entity.JigsawBlockEntity.JointType;
  * The top only matters if front is vertical and jointType is RIGID, in which case tops must be the same for jigsaws to match 
  * @param jointType JointType of the jigsaw. If RIGID and orientation front is vertical, orientation top must be the same for two jigsaws to match.
  * @param pool ResourceKey of the DynamicJigsawPool this parent jigsaw will generate child jigsaws from.
- * @param target ResourceLocation which a child jigsaw must have in order to be targeted by this parent jigsaw   
+ * @param target Identifier which a child jigsaw must have in order to be targeted by this parent jigsaw   
  */
 public record JigsawConnectionToChild(
 	BlockPos pos,
 	FrontAndTop orientation,
 	JointType jointType,
 	ResourceKey<DynamicJigsawPool> pool,
-	ResourceLocation target)
+	Identifier target)
 {	
 	/**
 	 * {@return JigsawConnectionToChild with same values as this except moved by the given offset}

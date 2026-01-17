@@ -11,7 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity.JointType;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -55,7 +55,7 @@ public record DynamicJigsawResult(
 	public static final DynamicJigsawResult EMPTY = new DynamicJigsawResult(EmptyPieceFiller.INSTANCE, BoundingBox.infinite(), List.of(), List.of(), Consumers.nop());
 
 	/** minecraft:empty as a child jigsaw name indicates it should not be a child, and as a target jigsaw name of a parent indicates it should not be a parent */
-	public static final ResourceLocation EMPTY_NAME = ResourceLocation.withDefaultNamespace("empty");
+	public static final Identifier EMPTY_NAME = Identifier.withDefaultNamespace("empty");
 	
 	/**
 	 * {@return DynamicJigsawResult with parent but no children}
@@ -227,9 +227,9 @@ public record DynamicJigsawResult(
 	 * The front is the primary direction of the jigsaw, which must be the opposite of the parent jigsaw for them to match
 	 * The top only matters if front is vertical and parent has JointType RIGID, in which case the tops must be the same to connect
 	 * @param jointType JointType of the jigsaw. If RIGID and orientation front is vertical, orientation top must be the same for two jigsaws to match.
-	 * @param name ResourceLocation of this jigsaw when used as a child connector, to be targeted by parent jigsaws
+	 * @param name Identifier of this jigsaw when used as a child connector, to be targeted by parent jigsaws
 	 * @param targetPool ResourceKey of the DynamicJigsawPool this parent jigsaw will generate child jigsaws from.
-	 * @param targetName ResourceLocation which a child jigsaw must have in order to be targeted by this parent jigsaw 
+	 * @param targetName Identifier which a child jigsaw must have in order to be targeted by this parent jigsaw 
 	 * @param placementPriority int designating when this jigsaw's child piece should be processed, after being selected, relative to other pieces. Higher = sooner.
 	 * The child piece has already been selected and oriented within the jigsaw tree once this is used, so this causes the children of the child to be checked for fitting earlier, not the child itself.   
 	 */
@@ -239,9 +239,9 @@ public record DynamicJigsawResult(
 		BlockPos pos,
 		FrontAndTop orientation,
 		JointType jointType,
-		ResourceLocation name,
+		Identifier name,
 		ResourceKey<DynamicJigsawPool> targetPool,
-		ResourceLocation targetName,
+		Identifier targetName,
 		int placementPriority)
 	{
 		connectionsToParent.add(new JigsawConnectionToParent(pos, orientation, name, placementPriority));
@@ -256,10 +256,10 @@ public record DynamicJigsawResult(
 	 */
 	public static void addConnectionsFromTemplateJigsaw(JigsawBlockInfo jigsaw, List<SelectableJigsawConnectionToParent> selectableJigsawConnectionsToParents, List<JigsawConnectionToChild> connectionsToChildren)
 	{
-		ResourceLocation name = jigsaw.name();
-		ResourceLocation targetName = jigsaw.target();
+		Identifier name = jigsaw.name();
+		Identifier targetName = jigsaw.target();
 		ResourceKey<StructureTemplatePool> targetPoolKey = jigsaw.pool();
-		ResourceLocation targetPoolLocation = targetPoolKey.location();
+		Identifier targetPoolLocation = targetPoolKey.identifier();
 		BlockPos pos = jigsaw.info().pos();
 		FrontAndTop orientation = jigsaw.info().state().getValue(JigsawBlock.ORIENTATION);
 		// pool could refer to minecraft:empty or structurebuddy:empty, just check the path

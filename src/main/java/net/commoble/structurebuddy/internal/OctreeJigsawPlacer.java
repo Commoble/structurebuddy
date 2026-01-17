@@ -33,7 +33,7 @@ import net.minecraft.core.Holder.Reference;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.block.Rotation;
@@ -189,7 +189,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			Reference<DynamicJigsawPool> poolHolder = maybePool.get();
 			DynamicJigsawPool pool = poolHolder.value();
 			Holder<DynamicJigsawPool> fallbackPoolHolder = pool.fallback().orElseGet(() -> context.registryAccess().lookupOrThrow(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL).getOrThrow(DynamicJigsawPool.EMPTY));
-			ResourceLocation fallbackId = fallbackPoolHolder.unwrapKey().get().location();
+			Identifier fallbackId = fallbackPoolHolder.unwrapKey().get().identifier();
 			if (!isValidPool(fallbackPoolHolder.getKey()).test(fallbackPoolHolder))
 			{
 				LOGGER.warn("Empty or non-existent fallback pool: {}", fallbackId);

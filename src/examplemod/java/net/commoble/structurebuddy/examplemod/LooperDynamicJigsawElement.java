@@ -26,7 +26,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.HolderSetCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
@@ -43,9 +43,9 @@ public record LooperDynamicJigsawElement(
 	int maxLength,
 	int maxWidth,
 	HolderSet<Block> blocks,
-	ResourceLocation jigsawName,
+	Identifier jigsawName,
 	ResourceKey<DynamicJigsawPool> targetPool,
-	ResourceLocation targetJigsawName
+	Identifier targetJigsawName
 	) implements DynamicJigsawElement
 {
 	public static final ResourceKey<MapCodec<? extends DynamicJigsawElement>> KEY = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT_TYPE, StructureBuddy.id("looper"));
@@ -56,9 +56,9 @@ public record LooperDynamicJigsawElement(
 			Codec.INT.fieldOf("max_length").forGetter(LooperDynamicJigsawElement::maxLength),
 			Codec.INT.fieldOf("max_width").forGetter(LooperDynamicJigsawElement::maxWidth),
 			HolderSetCodec.create(Registries.BLOCK, BuiltInRegistries.BLOCK.holderByNameCodec(), false).fieldOf("blocks").forGetter(LooperDynamicJigsawElement::blocks),
-			ResourceLocation.CODEC.fieldOf("jigsaw_name").forGetter(LooperDynamicJigsawElement::jigsawName),
+			Identifier.CODEC.fieldOf("jigsaw_name").forGetter(LooperDynamicJigsawElement::jigsawName),
 			ResourceKey.codec(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL).fieldOf("target_pool").forGetter(LooperDynamicJigsawElement::targetPool),
-			ResourceLocation.CODEC.fieldOf("target_jigsaw_name").forGetter(LooperDynamicJigsawElement::targetJigsawName)
+			Identifier.CODEC.fieldOf("target_jigsaw_name").forGetter(LooperDynamicJigsawElement::targetJigsawName)
 		).apply(builder, LooperDynamicJigsawElement::new));
 	
 	@Override

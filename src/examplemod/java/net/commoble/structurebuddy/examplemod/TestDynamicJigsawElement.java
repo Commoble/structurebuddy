@@ -23,7 +23,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.HolderSetCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
@@ -33,18 +33,18 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public record TestDynamicJigsawElement(
 		HolderSet<Block> blocks,
-		ResourceLocation jigsawName,
+		Identifier jigsawName,
 		ResourceKey<DynamicJigsawPool> targetPool,
-		ResourceLocation targetJigsawName
+		Identifier targetJigsawName
 	) implements DynamicJigsawElement
 {
 
 	public static final ResourceKey<MapCodec<? extends DynamicJigsawElement>> KEY = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT_TYPE, StructureBuddy.id("test"));
 	public static final MapCodec<TestDynamicJigsawElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
 			HolderSetCodec.create(Registries.BLOCK, BuiltInRegistries.BLOCK.holderByNameCodec(), false).fieldOf("blocks").forGetter(TestDynamicJigsawElement::blocks),
-			ResourceLocation.CODEC.fieldOf("jigsaw_name").forGetter(TestDynamicJigsawElement::jigsawName),
+			Identifier.CODEC.fieldOf("jigsaw_name").forGetter(TestDynamicJigsawElement::jigsawName),
 			ResourceKey.codec(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL).fieldOf("target_pool").forGetter(TestDynamicJigsawElement::targetPool),
-			ResourceLocation.CODEC.fieldOf("target_jigsaw_name").forGetter(TestDynamicJigsawElement::targetJigsawName)
+			Identifier.CODEC.fieldOf("target_jigsaw_name").forGetter(TestDynamicJigsawElement::targetJigsawName)
 		).apply(builder, TestDynamicJigsawElement::new));
 		
 	@Override

@@ -23,7 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pools.FeaturePoolElement;
@@ -35,9 +35,9 @@ import net.neoforged.neoforge.registries.DeferredHolder;
  * Still doesn't produce a bounding box around its feature to avoid overlap;
  * if a bounding box is desired, consider registering a DynamicJigsawElement type which generates the required blocks
  * @param feature Holder of a ConfiguredFeature to generate
- * @param jigsawName ResourceLocation of jigsaw connection to be targeted by parent, e.g. "minecraft:bottom"
+ * @param jigsawName Identifier of jigsaw connection to be targeted by parent, e.g. "minecraft:bottom"
  */
-public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature, ResourceLocation jigsawName) implements DynamicJigsawElement
+public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature, Identifier jigsawName) implements DynamicJigsawElement
 {
 	private static final Logger LOGGER = LogUtils.getLogger();
 	
@@ -46,7 +46,7 @@ public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature
 	/** holder */
 	public static final DeferredHolder<MapCodec<? extends DynamicJigsawElement>, MapCodec<FeatureDynamicJigsawElement>> HOLDER = DeferredHolder.create(KEY);
 	/** minecraft:bottom, same as what FeaturePoolElement uses */
-	public static final ResourceLocation DEFAULT_JIGSAW_NAME = ResourceLocation.withDefaultNamespace("bottom"); // same as FeaturePoolElement
+	public static final Identifier DEFAULT_JIGSAW_NAME = Identifier.withDefaultNamespace("bottom"); // same as FeaturePoolElement
 	
 	/**
 	 * e.g.
@@ -60,7 +60,7 @@ public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature
 	 */
 	public static final MapCodec<FeatureDynamicJigsawElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
 			ConfiguredFeature.CODEC.fieldOf("feature").forGetter(FeatureDynamicJigsawElement::feature),
-			ResourceLocation.CODEC.optionalFieldOf("jigsaw_name", DEFAULT_JIGSAW_NAME).forGetter(FeatureDynamicJigsawElement::jigsawName)
+			Identifier.CODEC.optionalFieldOf("jigsaw_name", DEFAULT_JIGSAW_NAME).forGetter(FeatureDynamicJigsawElement::jigsawName)
 		).apply(builder, FeatureDynamicJigsawElement::new));
 			
 	@Override

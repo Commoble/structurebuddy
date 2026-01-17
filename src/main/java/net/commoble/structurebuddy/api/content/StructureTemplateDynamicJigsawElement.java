@@ -21,7 +21,7 @@ import net.commoble.structurebuddy.api.StructureBuddyRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure.GenerationContext;
@@ -37,12 +37,12 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 
 /**
  * DynamicJigsawElement (and PieceFiller) which places a structure template (i.e. structure nbt file) analogous to SinglePoolElement in vanilla jigsaw structures
- * @param location ResourceLocation of structure template
+ * @param location Identifier of structure template
  * @param processors Optional StructureProcessorList to apply to structure template while placing blocks into world
  * @param overrideLiquidSettings Optional LiquidSettings to override for this jigsaw piece instead of using the root Structure liquid settings
  */
 public record StructureTemplateDynamicJigsawElement(
-	ResourceLocation location,
+	Identifier location,
 	Optional<Holder<StructureProcessorList>> processors,
 	Optional<LiquidSettings> overrideLiquidSettings
 	) implements DynamicJigsawElement, PieceFiller
@@ -68,7 +68,7 @@ public record StructureTemplateDynamicJigsawElement(
 	</pre>
 	 */
 	public static final MapCodec<StructureTemplateDynamicJigsawElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-			ResourceLocation.CODEC.fieldOf("location").forGetter(StructureTemplateDynamicJigsawElement::location),
+			Identifier.CODEC.fieldOf("location").forGetter(StructureTemplateDynamicJigsawElement::location),
 			StructureProcessorType.LIST_CODEC.optionalFieldOf("processors").forGetter(StructureTemplateDynamicJigsawElement::processors),
 			LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter(StructureTemplateDynamicJigsawElement::overrideLiquidSettings)
 		).apply(builder, StructureTemplateDynamicJigsawElement::new));

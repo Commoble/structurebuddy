@@ -1,6 +1,6 @@
 package net.commoble.structurebuddy.api;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * APIs related to the mod
@@ -13,12 +13,12 @@ public final class StructureBuddy
 	public static final String MODID = "structurebuddy";
 
 	/**
-	 * Creates a ResourceLocation under the structurebuddy namespace
-	 * @param path String path of returned ResourceLocation e.g. "foobar"
-	 * @return ResourceLocation under the structuurebuddy namespace, e.g. "structurebuddy:foobar"
+	 * Creates a Identifier under the structurebuddy namespace
+	 * @param path String path of returned Identifier e.g. "foobar"
+	 * @return Identifier under the structuurebuddy namespace, e.g. "structurebuddy:foobar"
 	 */
-	public static ResourceLocation id(String path)
+	public static Identifier id(String path)
 	{
-		return ResourceLocation.fromNamespaceAndPath(MODID, path);
+		return Identifier.fromNamespaceAndPath(MODID, path);
 	}
 }
