@@ -1,7 +1,6 @@
 package net.commoble.structurebuddy.internal;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import net.commoble.structurebuddy.api.AvailableSpace;
 import net.minecraft.core.BlockPos;
@@ -66,14 +65,14 @@ public interface SubtractiveOctree extends AvailableSpace
 	{
 		private final int depth;
 		private boolean empty = false;
-		private @Nonnull BoundingBox bounds;
+		private BoundingBox bounds;
 		private @Nullable SubdivisionHolder subdivisionHolder = null;
 		
 		/**
 		 * Constructs a NonEmpty at depth 0
 		 * @param bounds Non-null bounds with size >= 1 on all axes (use Empty to represent volume=0)
 		 */
-		public NonEmpty(@Nonnull BoundingBox bounds)
+		public NonEmpty(BoundingBox bounds)
 		{
 			this(bounds, 0);
 		}
@@ -82,7 +81,7 @@ public interface SubtractiveOctree extends AvailableSpace
 		 * @param bounds Non-null bounds with size >= 1 on all axes (use Empty to represent volume=0)
 		 * @param depth how deep within the octree we are
 		 */
-		public NonEmpty(@Nonnull BoundingBox bounds, int depth)
+		public NonEmpty(BoundingBox bounds, int depth)
 		{
 			this.bounds = bounds;
 			this.depth = depth;
@@ -93,7 +92,7 @@ public interface SubtractiveOctree extends AvailableSpace
 		 * @param subtractionBounds BoundingBox to subtract from this octree
 		 * @return true if this octree is empty after the subtraction
 		 */
-		public boolean subtract(@Nonnull BoundingBox subtractionBounds)
+		public boolean subtract(BoundingBox subtractionBounds)
 		{
 			// if we've already been totally subtracted, can't subtract further
 			if (this.empty)
@@ -117,14 +116,16 @@ public interface SubtractiveOctree extends AvailableSpace
 			
 			// now we know the subtraction region partially overlaps this octree and we need to subtract something
 			// if we're not already subdivided, subdivide it first
-			if (this.subdivisionHolder == null)
+			SubdivisionHolder subdivisionHolder = this.subdivisionHolder;
+			if (subdivisionHolder == null)
 			{
-				this.subdivisionHolder = this.makeSubdivisions(clampedSubtractionBounds);
+				subdivisionHolder = this.makeSubdivisions(clampedSubtractionBounds);
+				this.subdivisionHolder = subdivisionHolder;
 			}
 			
 			// subtract each subdivision
 			boolean subdivisionsRemaining = false;
-			SubtractiveOctree[] subdivisions = this.subdivisionHolder.subdivisions();
+			SubtractiveOctree[] subdivisions = subdivisionHolder.subdivisions();
 			for (int i=0; i< subdivisions.length; i++)
 			{
 				if (subdivisions[i].subtract(subtractionBounds))
@@ -204,12 +205,13 @@ public interface SubtractiveOctree extends AvailableSpace
 			if (!doesBoxEncapsulate(this.bounds, newBox))
 				return false;
 			// then, check whether any space has been subtracted from this box
-			if (this.subdivisionHolder == null)
+			SubdivisionHolder subdivisionHolder = this.subdivisionHolder;
+			if (subdivisionHolder == null)
 				return true; // no subdivisions = no subtraction done
 			
 			// otherwise, check if each subdivision that intersects with newBox contains that intersection
-			BlockPos divider = this.subdivisionHolder.divider();
-			SubtractiveOctree[] subdivisions = this.subdivisionHolder.subdivisions();
+			BlockPos divider = subdivisionHolder.divider();
+			SubtractiveOctree[] subdivisions = subdivisionHolder.subdivisions();
 			Corner[] corners = Corner.values();
 			for (int i=0; i<8; i++)
 			{
@@ -232,12 +234,13 @@ public interface SubtractiveOctree extends AvailableSpace
 			if (!this.bounds.isInside(pos))
 				return false;
 			// then, check whether any space has been subtracted from this box
-			if (this.subdivisionHolder == null)
+			SubdivisionHolder subdivisionHolder = this.subdivisionHolder;
+			if (subdivisionHolder == null)
 				return true; // no subdivisions = no subtraction done
 			
 			// otherwise, get the octant which would contain the position and check that
-			int octantIndex = Corner.getOctantIndex(this.subdivisionHolder.divider(), pos);
-			return this.subdivisionHolder.subdivisions[octantIndex].containsPos(pos);
+			int octantIndex = Corner.getOctantIndex(subdivisionHolder.divider(), pos);
+			return subdivisionHolder.subdivisions[octantIndex].containsPos(pos);
 		}
 		
 		/**

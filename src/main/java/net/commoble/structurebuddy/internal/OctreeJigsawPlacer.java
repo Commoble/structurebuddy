@@ -189,8 +189,9 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			Reference<DynamicJigsawPool> poolHolder = maybePool.get();
 			DynamicJigsawPool pool = poolHolder.value();
 			Holder<DynamicJigsawPool> fallbackPoolHolder = pool.fallback().orElseGet(() -> context.registryAccess().lookupOrThrow(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL).getOrThrow(DynamicJigsawPool.EMPTY));
-			Identifier fallbackId = fallbackPoolHolder.unwrapKey().get().identifier();
-			if (!isValidPool(fallbackPoolHolder.getKey()).test(fallbackPoolHolder))
+			ResourceKey<DynamicJigsawPool> fallbackPoolKey = fallbackPoolHolder.unwrapKey().get(); 
+			Identifier fallbackId = fallbackPoolKey.identifier();
+			if (!isValidPool(fallbackPoolKey).test(fallbackPoolHolder))
 			{
 				LOGGER.warn("Empty or non-existent fallback pool: {}", fallbackId);
 				continue;

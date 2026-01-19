@@ -1,8 +1,10 @@
 package net.commoble.structurebuddy.internal;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.Nullable;
 
 import net.commoble.structurebuddy.api.JigsawConnectionToChild;
 import net.commoble.structurebuddy.api.content.DynamicJigsawStructurePiece;
@@ -21,8 +23,10 @@ import net.commoble.structurebuddy.api.content.DynamicJigsawStructurePiece;
 public record OctreePieceState(DynamicJigsawStructurePiece piece, List<JigsawConnectionToChild> shuffledConnectionsToChildren, SubtractiveOctree octree, JigsawData jigsawData, int depth, int placementPriority, int placementCounter) implements Comparable<OctreePieceState>
 {
 	@Override
-	public int compareTo(OctreePieceState that)
+	public int compareTo(@Nullable OctreePieceState that)
 	{
+		Objects.requireNonNull(that); // Comparable specifies an NPE must be thrown if `that` is null
+		
 		// placement priority : higher => earlier in list
 		// if same, check placement counter: lower -> earlier in list
 		// not using SequencedPriorityIterator because we need to pass the list of jigsaws from the queue to apis

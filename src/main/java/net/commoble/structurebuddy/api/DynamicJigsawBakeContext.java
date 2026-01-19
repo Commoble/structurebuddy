@@ -3,7 +3,7 @@ package net.commoble.structurebuddy.api;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.Structure.GenerationContext;
