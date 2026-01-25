@@ -103,7 +103,6 @@ public record StructureTemplateBoxElement(
 		while (!jigsaws.isEmpty())
 		{
 			JigsawBlockInfo jigsaw = jigsaws.remove(generationContext.random().nextInt(jigsaws.size()));
-			// does slightly more work than necessary, but reusing this instead of writing a pared-down version because I'm lazy
 			DynamicJigsawResult.addConnectionsFromTemplateJigsaw(jigsaw, shuffledConnectionsToParent, connectionsToChildren);
 		}
 		shuffledConnectionsToParent.sort(Comparator.comparingInt(SelectableJigsawConnectionToParent::selectionPriority).reversed());
@@ -118,6 +117,6 @@ public record StructureTemplateBoxElement(
 		BoundingBox finalBox = snapResult.snap(localBoundingBox, parentBox, context.generationContext().random());
 		
 		PieceFiller pieceFiller = new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings);
-		return new BoxResult(pieceFiller, finalBox, Consumers.nop());
+		return new BoxResult(pieceFiller, finalBox, connectionsToChildren, Consumers.nop());
 	}
 }
