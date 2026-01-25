@@ -16,14 +16,16 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * Must be relative to the coordinates of the box provided by {@link BoxElement#bake}.
  * Consumers of the DynamicBoxResult should refuse to generate anything if localBoundingBox is not contained by the
  * box provided by the context (and elements may return {@link BoxResult#invalid} to indicate an invalid result).
- * @param jigsaws List of jigsaw connections to child jigsaw pools; whether these are supported or not depends on box assembling implementation
+ * @param connectionsToParent List of jigsaw connections to parent jigsaw pools; whether these are supported or not depends on box assembling implementation
+ * @param connectionsToChildren List of jigsaw connections to child jigsaw pools; whether these are supported or not depends on box assembling implementation
  * @param onSelected Consumer to apply modifications to shared jigsaw piece data,
  * which will run if these results are selected to add a piece to the structure.
  */
 public record BoxResult(
 	PieceFiller pieceFiller,
 	BoundingBox localBoundingBox,
-	List<JigsawConnectionToChild> jigsaws,
+	List<JigsawConnectionToParent> connectionsToParent,
+	List<JigsawConnectionToChild> connectionsToChildren,
 	Consumer<JigsawDataAccess> onSelected)
 {
 	/**
@@ -42,6 +44,7 @@ public record BoxResult(
 			EmptyPieceFiller.INSTANCE,
 			box,
 			List.of(),
+			List.of(),
 			Consumers.nop());
 	}
 	
@@ -59,6 +62,7 @@ public record BoxResult(
 		return new BoxResult(
 			EmptyPieceFiller.INSTANCE,
 			BoundingBox.infinite(),
+			List.of(),
 			List.of(),
 			Consumers.nop());
 	}

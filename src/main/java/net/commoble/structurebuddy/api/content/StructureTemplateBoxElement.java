@@ -117,6 +117,6 @@ public record StructureTemplateBoxElement(
 		BoundingBox finalBox = snapResult.snap(localBoundingBox, parentBox, context.generationContext().random());
 		
 		PieceFiller pieceFiller = new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings);
-		return new BoxResult(pieceFiller, finalBox, connectionsToChildren, Consumers.nop());
+		return new BoxResult(pieceFiller, finalBox, selectedConnectionsToParent, connectionsToChildren, Consumers.nop());
 	}
 }
