@@ -6,6 +6,8 @@ import org.jetbrains.annotations.ApiStatus;
 
 import com.mojang.serialization.MapCodec;
 
+import net.commoble.structurebuddy.api.BoxElement;
+import net.commoble.structurebuddy.api.BoxPool;
 import net.commoble.structurebuddy.api.DynamicJigsawElement;
 import net.commoble.structurebuddy.api.DynamicJigsawPool;
 import net.commoble.structurebuddy.api.PieceFiller;
@@ -13,11 +15,15 @@ import net.commoble.structurebuddy.api.StructureBuddy;
 import net.commoble.structurebuddy.api.StructureBuddyRegistries;
 import net.commoble.structurebuddy.api.content.DynamicJigsawStructure;
 import net.commoble.structurebuddy.api.content.DynamicJigsawStructurePiece;
+import net.commoble.structurebuddy.api.content.EmptyBoxElement;
 import net.commoble.structurebuddy.api.content.EmptyDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.EmptyPieceFiller;
 import net.commoble.structurebuddy.api.content.FeatureDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.FeatureDynamicJigsawElement.FeaturePieceFiller;
+import net.commoble.structurebuddy.api.content.StructureTemplateBoxElement;
 import net.commoble.structurebuddy.api.content.StructureTemplateDynamicJigsawElement;
+import net.commoble.structurebuddy.api.content.StructureTemplatePieceFiller;
+import net.commoble.structurebuddy.api.content.SubPoolBoxElement;
 import net.commoble.structurebuddy.api.content.SubPoolDynamicJigsawElement;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -44,26 +50,33 @@ public class StructureBuddyMod
 	public StructureBuddyMod()
 	{
 		IEventBus modBus = ModList.get().getModContainerById(StructureBuddy.MODID).get().getEventBus();
-		DeferredRegister<StructureType<?>> structureTypes = defreg(Registries.STRUCTURE_TYPE);
+		// vanilla registries
 		DeferredRegister<StructurePieceType> structurePieceTypes = defreg(Registries.STRUCTURE_PIECE);
+		DeferredRegister<StructureType<?>> structureTypes = defreg(Registries.STRUCTURE_TYPE);
+		// custom registries
+		DeferredRegister<MapCodec<? extends BoxElement>> boxElementTypes = newRegistry(StructureBuddyRegistries.BOX_ELEMENT_TYPE);
 		DeferredRegister<MapCodec<? extends DynamicJigsawElement>> dynamicJigsawElementTypes = newRegistry(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT_TYPE);
 		DeferredRegister<MapCodec<? extends PieceFiller>> pieceFillerTypes = newRegistry(StructureBuddyRegistries.PIECE_FILLER_TYPE);
-
-		structureTypes.<StructureType<DynamicJigsawStructure>>register(
-			"dynamic_jigsaw",
-			() -> () -> DynamicJigsawStructure.CODEC);
 
 		structurePieceTypes.register("dynamic_jigsaw",
 			() -> DynamicJigsawStructurePiece::new);
 		
-		dynamicJigsawElementTypes.register("empty", () -> EmptyDynamicJigsawElement.CODEC);
-		dynamicJigsawElementTypes.register("structure_template", () -> StructureTemplateDynamicJigsawElement.CODEC);
-		dynamicJigsawElementTypes.register("subpool", () -> SubPoolDynamicJigsawElement.CODEC);
-		dynamicJigsawElementTypes.register("feature", () -> FeatureDynamicJigsawElement.CODEC);
+		structureTypes.<StructureType<DynamicJigsawStructure>>register(
+			"dynamic_jigsaw",
+			() -> () -> DynamicJigsawStructure.CODEC);
 		
-		pieceFillerTypes.register("empty", () -> EmptyPieceFiller.CODEC);
-		pieceFillerTypes.register("structure_template", () -> StructureTemplateDynamicJigsawElement.CODEC);
-		pieceFillerTypes.register("feature", () -> FeaturePieceFiller.CODEC);
+		boxElementTypes.register(EmptyBoxElement.HOLDER.getId().getPath(), () -> EmptyBoxElement.CODEC);
+		boxElementTypes.register(StructureTemplateBoxElement.HOLDER.getId().getPath(), () -> StructureTemplateBoxElement.CODEC);
+		boxElementTypes.register(SubPoolBoxElement.HOLDER.getId().getPath(), () -> SubPoolBoxElement.CODEC);
+		
+		dynamicJigsawElementTypes.register(EmptyDynamicJigsawElement.HOLDER.getId().getPath(), () -> EmptyDynamicJigsawElement.CODEC);
+		dynamicJigsawElementTypes.register(FeatureDynamicJigsawElement.HOLDER.getId().getPath(), () -> FeatureDynamicJigsawElement.CODEC);
+		dynamicJigsawElementTypes.register(StructureTemplateDynamicJigsawElement.HOLDER.getId().getPath(), () -> StructureTemplateDynamicJigsawElement.CODEC);
+		dynamicJigsawElementTypes.register(SubPoolDynamicJigsawElement.HOLDER.getId().getPath(), () -> SubPoolDynamicJigsawElement.CODEC);
+		
+		pieceFillerTypes.register(EmptyPieceFiller.HOLDER.getId().getPath(), () -> EmptyPieceFiller.CODEC);
+		pieceFillerTypes.register(FeaturePieceFiller.HOLDER.getId().getPath(), () -> FeaturePieceFiller.CODEC);
+		pieceFillerTypes.register(StructureTemplatePieceFiller.PIECE_FILLER_HOLDER.getId().getPath(), () -> StructureTemplatePieceFiller.CODEC);
 		
 		modBus.addListener(this::onRegisterDatapackRegistries);
 	}
@@ -90,6 +103,7 @@ public class StructureBuddyMod
 	
 	private void onRegisterDatapackRegistries(DataPackRegistryEvent.NewRegistry event)
 	{
+		event.dataPackRegistry(StructureBuddyRegistries.BOX_POOL, BoxPool.DIRECT_CODEC);
 		event.dataPackRegistry(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, DynamicJigsawPool.DIRECT_CODEC);
 	}
 	

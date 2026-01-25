@@ -32,7 +32,7 @@ public interface DynamicJigsawElement
 	 * If any randomness is to be applied that needs to be consistent across multiple chunks generating or a server reboot,
 	 * this is where those random calls should be done.
 	 * @param context DynamicJigsawBakeContext
-	 * @return DynamicJigsawBakeResult containing the size, contents, and connections of the structure piece to be added.
+	 * @return DynamicJigsawResult containing the size, contents, and connections of the structure piece to be added.
 	 */
 	public abstract DynamicJigsawResult bake(DynamicJigsawBakeContext context);
 }

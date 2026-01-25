@@ -51,8 +51,11 @@ public record DynamicJigsawResult(
 	List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren,
 	Consumer<JigsawDataAccess> onSelected)
 {
-	/** Empty DynamicJigsawResult indicating no piece can be created or connected**/
-	public static final DynamicJigsawResult EMPTY = new DynamicJigsawResult(EmptyPieceFiller.INSTANCE, BoundingBox.infinite(), List.of(), List.of(), Consumers.nop());
+	/** {@return Empty DynamicJigsawResult indicating no piece can be created or connected} **/
+	public static DynamicJigsawResult invalid()
+	{
+		return new DynamicJigsawResult(EmptyPieceFiller.INSTANCE, BoundingBox.infinite(), List.of(), List.of(), Consumers.nop());
+	}
 
 	/** minecraft:empty as a child jigsaw name indicates it should not be a child, and as a target jigsaw name of a parent indicates it should not be a parent */
 	public static final Identifier EMPTY_NAME = Identifier.withDefaultNamespace("empty");

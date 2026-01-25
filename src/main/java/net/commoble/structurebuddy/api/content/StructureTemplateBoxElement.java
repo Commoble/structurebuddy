@@ -5,17 +5,25 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.function.Consumers;
+
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.commoble.structurebuddy.api.DynamicJigsawBakeContext;
-import net.commoble.structurebuddy.api.DynamicJigsawElement;
+import net.commoble.structurebuddy.api.BoxBakeContext;
+import net.commoble.structurebuddy.api.BoxElement;
+import net.commoble.structurebuddy.api.BoxResult;
+import net.commoble.structurebuddy.api.BoxSnap;
+import net.commoble.structurebuddy.api.BoxSnap.FaceBoxSnap;
 import net.commoble.structurebuddy.api.DynamicJigsawResult;
 import net.commoble.structurebuddy.api.JigsawConnectionToChild;
 import net.commoble.structurebuddy.api.JigsawConnectionToParent;
+import net.commoble.structurebuddy.api.PieceFiller;
 import net.commoble.structurebuddy.api.SelectableJigsawConnectionToParent;
+import net.commoble.structurebuddy.api.SnapResult;
 import net.commoble.structurebuddy.api.StructureBuddy;
 import net.commoble.structurebuddy.api.StructureBuddyRegistries;
+import net.commoble.structurebuddy.api.util.BoxBuddy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
@@ -32,21 +40,23 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 /**
- * DynamicJigsawElement which places a structure template (i.e. structure nbt file) analogous to SinglePoolElement in vanilla jigsaw structures
+ * BoxElement which bakes some structure template (.nbt structure file) into a box
  * @param location Identifier of structure template
  * @param processors Optional StructureProcessorList to apply to structure template while placing blocks into world
  * @param overrideLiquidSettings Optional LiquidSettings to override for this jigsaw piece instead of using the root Structure liquid settings
+ * @param snap BoxSnap indicating directions of available surfaces to snap to if possible. Template position will be randomized on non-snapping axes.
  */
-public record StructureTemplateDynamicJigsawElement(
+public record StructureTemplateBoxElement(
 	Identifier location,
 	Optional<Holder<StructureProcessorList>> processors,
-	Optional<LiquidSettings> overrideLiquidSettings
-	) implements DynamicJigsawElement
+	Optional<LiquidSettings> overrideLiquidSettings,
+	BoxSnap snap) implements BoxElement
 {
+
 	/** structurebuddy:dynamic_jigsaw_element_type / structurebuddy:structure_template **/
-	public static final ResourceKey<MapCodec<? extends DynamicJigsawElement>> ELEMENT_KEY = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT_TYPE, StructureBuddy.id("structure_template"));
+	public static final ResourceKey<MapCodec<? extends BoxElement>> KEY = ResourceKey.create(StructureBuddyRegistries.BOX_ELEMENT_TYPE, StructureBuddy.id("structure_template"));
 	/** holder **/
-	public static final DeferredHolder<MapCodec<? extends DynamicJigsawElement>, MapCodec<StructureTemplateDynamicJigsawElement>> HOLDER = DeferredHolder.create(ELEMENT_KEY);
+	public static final DeferredHolder<MapCodec<? extends BoxElement>, MapCodec<StructureTemplateBoxElement>> HOLDER = DeferredHolder.create(KEY);
 
 	/**
 	 * e.g. 
@@ -56,28 +66,36 @@ public record StructureTemplateDynamicJigsawElement(
 		"location": "yourmod:some_structure_template", // id of structure nbt file
 		"processors": "yourmod:some_processor_list", // id of processor list file; optional, defaults to no processors
 		"override_liquid_settings": true // optional, if not true or false then defaults to liquid settings from structure json
+		"snap": "floor" // optional, defaults to floor
 	}
 	</pre>
 	 */
-	public static final MapCodec<StructureTemplateDynamicJigsawElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-			Identifier.CODEC.fieldOf("location").forGetter(StructureTemplateDynamicJigsawElement::location),
-			StructureProcessorType.LIST_CODEC.optionalFieldOf("processors").forGetter(StructureTemplateDynamicJigsawElement::processors),
-			LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter(StructureTemplateDynamicJigsawElement::overrideLiquidSettings)
-		).apply(builder, StructureTemplateDynamicJigsawElement::new));
+	public static final MapCodec<StructureTemplateBoxElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+			Identifier.CODEC.fieldOf("location").forGetter(StructureTemplateBoxElement::location),
+			StructureProcessorType.LIST_CODEC.optionalFieldOf("processors").forGetter(StructureTemplateBoxElement::processors),
+			LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter(StructureTemplateBoxElement::overrideLiquidSettings),
+			BoxSnap.CODEC.optionalFieldOf("snap", FaceBoxSnap.FLOOR).forGetter(StructureTemplateBoxElement::snap)
+		).apply(builder, StructureTemplateBoxElement::new));
 
 	@Override
-	public MapCodec<? extends StructureTemplateDynamicJigsawElement> codec()
+	public MapCodec<? extends BoxElement> codec()
 	{
 		return CODEC;
 	}
 
 	@Override
-	public DynamicJigsawResult bake(DynamicJigsawBakeContext context)
+	public BoxResult bake(BoxBakeContext context)
 	{
 		GenerationContext generationContext = context.generationContext();
 		StructureTemplate template = generationContext.structureTemplateManager().getOrCreate(location);
 		Rotation rotation = context.rotation();
 		BoundingBox localBoundingBox = template.getBoundingBox(new StructurePlaceSettings().setRotation(rotation), BlockPos.ZERO);
+		BoundingBox parentBox = context.box();
+		if (BoxBuddy.isLargerThan(localBoundingBox, parentBox))
+		{
+			return BoxResult.invalid();
+		}
+		
 		List<JigsawBlockInfo> jigsaws = template.getJigsaws(BlockPos.ZERO, rotation); // arraylist
 		// shuffle jigsaws
 		List<SelectableJigsawConnectionToParent> shuffledConnectionsToParent = new ArrayList<>(jigsaws.size());
@@ -85,6 +103,7 @@ public record StructureTemplateDynamicJigsawElement(
 		while (!jigsaws.isEmpty())
 		{
 			JigsawBlockInfo jigsaw = jigsaws.remove(generationContext.random().nextInt(jigsaws.size()));
+			// does slightly more work than necessary, but reusing this instead of writing a pared-down version because I'm lazy
 			DynamicJigsawResult.addConnectionsFromTemplateJigsaw(jigsaw, shuffledConnectionsToParent, connectionsToChildren);
 		}
 		shuffledConnectionsToParent.sort(Comparator.comparingInt(SelectableJigsawConnectionToParent::selectionPriority).reversed());
@@ -93,6 +112,12 @@ public record StructureTemplateDynamicJigsawElement(
 		{
 			selectedConnectionsToParent.add(selectable.connection());
 		}
-		return DynamicJigsawResult.withParentsAndChildren(new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings), localBoundingBox, selectedConnectionsToParent, connectionsToChildren);
+		SnapResult snapResult = this.snap.getSnap(selectedConnectionsToParent, context.boundingSurfaces(), context.generationContext().random());
+		if (snapResult == null)
+			return BoxResult.invalid();
+		BoundingBox finalBox = snapResult.snap(localBoundingBox, parentBox, context.generationContext().random());
+		
+		PieceFiller pieceFiller = new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings);
+		return new BoxResult(pieceFiller, finalBox, Consumers.nop());
 	}
 }

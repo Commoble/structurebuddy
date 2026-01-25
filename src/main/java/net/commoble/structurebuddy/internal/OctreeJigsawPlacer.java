@@ -90,7 +90,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 		}
 		
 		JigsawData jigsawData = new JigsawData(new HashMap<>(), new HashMap<>());
-		DynamicJigsawResult results = startElement.bake(new DynamicJigsawBakeContext(context, new SubtractiveOctree.NonEmpty(BoundingBox.infinite()), null, null, NO_AVAILABLE_CONNECTIONS, jigsawData, rotation, params.liquidSettings()));
+		DynamicJigsawResult results = startElement.bake(new DynamicJigsawBakeContext(context, new SubtractiveOctree.NonEmpty(BoundingBox.infinite()), null, NO_AVAILABLE_CONNECTIONS, jigsawData, rotation, params.liquidSettings()));
 		PieceFiller pieceFiller = results.pieceFiller();
 		BoundingBox startBounds = results.boundingBox(chunkCornerPos);
 		List<JigsawConnectionToChild> shuffledJigsawsConnectingToChildren = results.offsetShuffledConnectionsToChildren(chunkCornerPos);
@@ -234,7 +234,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 				for (Rotation childRotation : Rotation.getShuffled(this.random))
 				{
 					JigsawData childData = parentData.fork();
-					DynamicJigsawResult childResults = childElement.bake(new DynamicJigsawBakeContext(context, permittedSpace, null, parentJigsaw, remainingConnections, childData, childRotation, liquidSettings));
+					DynamicJigsawResult childResults = childElement.bake(new DynamicJigsawBakeContext(context, permittedSpace, parentJigsaw, remainingConnections, childData, childRotation, liquidSettings));
 					List<JigsawConnectionToParent> localChildJigsaws = childResults.shuffledLocalConnectionsToParent();
 					PieceFiller childPieceFiller = childResults.pieceFiller();
 					for (JigsawConnectionToParent localChildJigsaw : localChildJigsaws)

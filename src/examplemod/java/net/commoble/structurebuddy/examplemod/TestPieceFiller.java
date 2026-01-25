@@ -6,7 +6,7 @@ import net.commoble.structurebuddy.api.DynamicJigsawFillContext;
 import net.commoble.structurebuddy.api.PieceFiller;
 import net.commoble.structurebuddy.api.StructureBuddy;
 import net.commoble.structurebuddy.api.StructureBuddyRegistries;
-import net.commoble.structurebuddy.api.util.BoundingBoxUtils;
+import net.commoble.structurebuddy.api.util.BoxBuddy;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.WorldGenLevel;
@@ -34,17 +34,17 @@ public record TestPieceFiller(BlockState state) implements PieceFiller
 		WorldGenLevel level = context.level();
 		if (pieceBounds.getYSpan() > 1)
 		{
-			var floorAndHall = BoundingBoxUtils.split(pieceBounds, Axis.Y, pieceBounds.minY() + 1);
+			var floorAndHall = BoxBuddy.split(pieceBounds, Axis.Y, pieceBounds.minY() + 1);
 			floorBounds = floorAndHall.getFirst();
 			BoundingBox hallBounds = floorAndHall.getSecond();
-			BoundingBoxUtils.intersection(hallBounds, chunkBounds).ifPresent(box -> {
-				BoundingBoxUtils.forEachPos(box, pos -> {
+			BoxBuddy.intersection(hallBounds, chunkBounds).ifPresent(box -> {
+				BoxBuddy.forEachPos(box, pos -> {
 					level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
 				});
 			});
 		}
-		BoundingBoxUtils.intersection(floorBounds, chunkBounds).ifPresent(box -> {
-			BoundingBoxUtils.forEachPos(box, pos -> {
+		BoxBuddy.intersection(floorBounds, chunkBounds).ifPresent(box -> {
+			BoxBuddy.forEachPos(box, pos -> {
 				level.setBlock(pos, this.state, 2);
 			});
 		});

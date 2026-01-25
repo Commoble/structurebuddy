@@ -1,8 +1,6 @@
 package net.commoble.structurebuddy.api;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 import com.mojang.serialization.Codec;
@@ -10,11 +8,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.commoble.structurebuddy.api.content.DynamicJigsawStructure;
 import net.commoble.structurebuddy.api.content.StructureTemplateDynamicJigsawElement;
+import net.commoble.structurebuddy.api.util.RandomBuddy;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
 
 /**
@@ -65,24 +63,6 @@ public record DynamicJigsawPool(
 	 */
 	public Collection<? extends DynamicJigsawElement> getShuffledElements(RandomSource random)
 	{
-		List<DynamicJigsawElement> results = new ArrayList<>();
-		
-		WeightedList<DynamicJigsawElement> remainingWeightedList = this.elements;
-		while (remainingWeightedList.unwrap().size() > 0)
-		{
-			DynamicJigsawElement selected = remainingWeightedList.getRandomOrThrow(random);
-			results.add(selected);
-			List<Weighted<DynamicJigsawElement>> unselected = new ArrayList<>();
-			for (var weighted : remainingWeightedList.unwrap())
-			{
-				if (weighted.value() != selected)
-				{
-					unselected.add(weighted);
-				}
-			}
-			remainingWeightedList = WeightedList.of(unselected);
-		}
-		
-		return results;
+		return RandomBuddy.shuffleWeightedList(this.elements, random);
 	}
 }

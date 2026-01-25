@@ -76,7 +76,7 @@ public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature
 		if (parent == null)
 		{
 			LOGGER.warn("{} cannot be a root element", this);
-			return DynamicJigsawResult.EMPTY;
+			return DynamicJigsawResult.invalid();
 		}
 		FrontAndTop parentOrientation = parent.orientation();
 		BlockPos childPos = parent.pos().relative(parentOrientation.front());

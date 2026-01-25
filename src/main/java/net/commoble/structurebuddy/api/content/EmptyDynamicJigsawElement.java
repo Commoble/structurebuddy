@@ -40,6 +40,6 @@ public enum EmptyDynamicJigsawElement implements DynamicJigsawElement
 	@Override
 	public DynamicJigsawResult bake(DynamicJigsawBakeContext context)
 	{
-		return DynamicJigsawResult.EMPTY;
+		return DynamicJigsawResult.invalid();
 	}
 }

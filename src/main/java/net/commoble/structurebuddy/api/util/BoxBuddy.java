@@ -8,14 +8,31 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 /**
  * Utils for dealing with BoundingBoxes
  */
-public final class BoundingBoxUtils
+public final class BoxBuddy
 {
-	private BoundingBoxUtils() {}
+	private BoxBuddy() {}
+	
+	/**
+	 * infinite() returns a new box every time!
+	 * That's understandable because BoundingBoxes are mutable so handing out mutable constants is dangerous.
+	 * But it would be nice to have a reusable INFINITE that we know won't be mutated.
+	 */
+	private static final BoundingBox INFINITE = BoundingBox.infinite();
+	
+	/**
+	 * {@return true if given BoundingBox is equivalent to the infinite box}
+	 * @param box BoundingBox to check if infinite
+	 */
+	public static boolean isInfinite(BoundingBox box)
+	{
+		return box.equals(INFINITE);
+	}
 	
 	/**
 	 * Checks if it is safe to call split on the given box
@@ -142,5 +159,46 @@ public final class BoundingBoxUtils
 				}
 			}
 		}
+	}
+	
+	/**
+	 * {@return BlockPos at minimal corner of BoundingBox (minX, minY, minZ)}
+	 * @param box BoundingBox to get minimal corner of
+	 */
+	public static BlockPos minCorner(BoundingBox box)
+	{
+		return new BlockPos(box.minX(), box.minY(), box.minZ());
+	}
+	
+	/**
+	 * {@return BoundingBox moved by the given offset}
+	 * @param box BoundingBox to move
+	 * @param offset Vec3i to add to the box
+	 */
+	public static BoundingBox moved(BoundingBox box, Vec3i offset)
+	{
+		return box.moved(offset.getX(), offset.getY(), offset.getZ());
+	}
+	
+	/**
+	 * {@return true if child is larger than parent (regardless of relative position)}
+	 * @param child BoundingBox to check if larger than parent
+	 * @param parent BoundingBox to check if smaller than child
+	 */
+	public static boolean isLargerThan(BoundingBox child, BoundingBox parent)
+	{
+		return child.getXSpan() > parent.getXSpan()
+			|| child.getYSpan() > parent.getYSpan()
+			|| child.getZSpan() > parent.getZSpan();
+	}
+	
+	/**
+	 * {@return true if child can be contatined within parent (regardless of relative position)}
+	 * @param child BoundingBox to check if fits within parent
+	 * @param parent BoundingBox to check if child fits within
+	 */
+	public static boolean fitsWithin(BoundingBox child, BoundingBox parent)
+	{
+		return !isLargerThan(child, parent);
 	}
 }

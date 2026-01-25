@@ -8,6 +8,11 @@ import org.jetbrains.annotations.Nullable;
 import net.commoble.structurebuddy.api.JigsawDataAccess;
 import net.minecraft.util.context.ContextKey;
 
+/**
+ * Impl of JigsawDataAccess holding mutable data
+ * @param globalData Map of data shared by an entire dynamic jigsaw structure
+ * @param branchData Map of data which a given piece will make available only to its descendent pieces
+ */
 public record JigsawData(Map<ContextKey<?>,Object> globalData, Map<ContextKey<?>,Object> branchData) implements JigsawDataAccess
 {
 
@@ -39,6 +44,9 @@ public record JigsawData(Map<ContextKey<?>,Object> globalData, Map<ContextKey<?>
 		return (@Nullable T) this.branchData.put(key, data);
 	}
 	
+	/**
+	 * {@return JigsawData containing a shallow copy of the branch data (and sharing a reference to the global data)}
+	 */
 	public JigsawData fork()
 	{
 		return new JigsawData(this.globalData, new HashMap<>(this.branchData));

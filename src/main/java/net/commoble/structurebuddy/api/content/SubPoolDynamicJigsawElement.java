@@ -50,7 +50,7 @@ public record SubPoolDynamicJigsawElement(Holder<DynamicJigsawPool> value) imple
 			.elements()
 			.getRandom(context.generationContext().random())
 			.map(element -> element.bake(context))
-			.orElse(DynamicJigsawResult.EMPTY);
+			.orElse(DynamicJigsawResult.invalid());
 	}
 
 }

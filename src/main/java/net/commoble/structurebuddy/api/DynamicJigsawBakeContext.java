@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure.GenerationContext;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 
@@ -21,9 +20,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSetting
  * For pieces of fixed size, it is generally not necessary to use this to verify that your piece will fit into the available space
  * as this is done by the jigsaw assembler anyway;
  * the purpose of this is more for shaping dynamic pieces into the available space
- * @param maxPieceBox Nullable BoundingBox indicating an exact bounding box given for this piece to generate in.
- * The presence of this typically indicates that the parent piece has reserved a specific portion of itself for this
- * child to generate in (rather than relying on the jigsaw assembler
  * @param parent Jigsaw information of the parent jigsaw (including pos and orientation). Absolute world coordinates.
  * Will be null if this is the start piece, may be null if the parent provides a maxPieceBox.
  * (the connection of the parent points to this jigsaw piece, which is the child)
@@ -39,7 +35,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSetting
 public record DynamicJigsawBakeContext(
 	GenerationContext generationContext,
 	AvailableSpace remainingSpace,
-	@Nullable BoundingBox maxPieceBox,
 	@Nullable JigsawConnectionToChild parent,
 	Supplier<List<JigsawConnectionToChild>> remainingConnections,
 	JigsawDataReader data,
