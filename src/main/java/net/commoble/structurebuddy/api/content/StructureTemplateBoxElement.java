@@ -115,8 +115,28 @@ public record StructureTemplateBoxElement(
 		if (snapResult == null)
 			return BoxResult.invalid();
 		BoundingBox finalBox = snapResult.snap(localBoundingBox, parentBox, context.generationContext().random());
+		BlockPos jigsawOffset = BoxBuddy.minCorner(finalBox).subtract(BoxBuddy.minCorner(localBoundingBox));
+		List<JigsawConnectionToParent> finalConnectionsToParent = new ArrayList<>();
+		List<JigsawConnectionToChild> finalConnectionsToChild = new ArrayList<>();
+		for (JigsawConnectionToParent connection : selectedConnectionsToParent)
+		{
+			finalConnectionsToParent.add(new JigsawConnectionToParent(
+				connection.pos().offset(jigsawOffset),
+				connection.orientation(),
+				connection.name(),
+				connection.placementPriority()));
+		}
+		for (JigsawConnectionToChild connection : connectionsToChildren)
+		{
+			finalConnectionsToChild.add(new JigsawConnectionToChild(
+				connection.pos().offset(jigsawOffset),
+				connection.orientation(),
+				connection.jointType(),
+				connection.pool(),
+				connection.target()));
+		}
 		
 		PieceFiller pieceFiller = new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings);
-		return new BoxResult(pieceFiller, finalBox, selectedConnectionsToParent, connectionsToChildren, Consumers.nop());
+		return new BoxResult(pieceFiller, finalBox, finalConnectionsToParent, finalConnectionsToChild, Consumers.nop());
 	}
 }
