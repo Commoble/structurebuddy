@@ -285,7 +285,7 @@ public sealed interface BoxSnap
 						return null;
 					}
 				}
-				if (topJigsawName != null && topJigsawName.equals(topJigsawName))
+				if (topJigsawName != null && topJigsawName.equals(name))
 				{
 
 					Direction top = jigsaw.orientation().top();
