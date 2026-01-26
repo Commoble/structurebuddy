@@ -82,7 +82,7 @@ public record SnapResult(Optional<AxisDirection> x, Optional<AxisDirection> y, O
 		// which is parent - child
 		int minMoveX = parentBox.minX() - childBox.minX();
 		int minMoveY = parentBox.minY() - childBox.minY();
-		int minMoveZ = parentBox.minZ() - childBox.maxZ();
+		int minMoveZ = parentBox.minZ() - childBox.minZ();
 		// max to move...
 		// suppose parent max is 10 and child max is 5
 		// we want to add 5 to child
