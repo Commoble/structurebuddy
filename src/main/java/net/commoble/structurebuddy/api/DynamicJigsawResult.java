@@ -2,20 +2,21 @@ package net.commoble.structurebuddy.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.function.Consumers;
+import org.jspecify.annotations.Nullable;
 
 import net.commoble.structurebuddy.api.content.EmptyPieceFiller;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Vec3i;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity.JointType;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.JigsawBlockInfo;
 
 /**
@@ -256,23 +257,27 @@ public record DynamicJigsawResult(
 	 * @param jigsaw JigsgawBlockInfo from a StructureTemplate
 	 * @param selectableJigsawConnectionsToParents List of connections to parents
 	 * @param connectionsToChildren List of connections to children
+	 * @param jigsawOverrides Map of jigsaw name to overrides to apply to jigsaws with that name
 	 */
-	public static void addConnectionsFromTemplateJigsaw(JigsawBlockInfo jigsaw, List<SelectableJigsawConnectionToParent> selectableJigsawConnectionsToParents, List<JigsawConnectionToChild> connectionsToChildren)
+	public static void addConnectionsFromTemplateJigsaw(JigsawBlockInfo jigsaw, List<SelectableJigsawConnectionToParent> selectableJigsawConnectionsToParents, List<JigsawConnectionToChild> connectionsToChildren, Map<Identifier, JigsawOverrides> jigsawOverrides)
 	{
-		Identifier name = jigsaw.name();
-		Identifier targetName = jigsaw.target();
-		ResourceKey<StructureTemplatePool> targetPoolKey = jigsaw.pool();
-		Identifier targetPoolLocation = targetPoolKey.identifier();
+		Identifier originalName = jigsaw.name();
+		@Nullable JigsawOverrides overrides = jigsawOverrides.get(originalName);
+		Identifier name = overrides == null ? originalName : overrides.name().orElse(originalName);
+		Identifier targetName = overrides == null ? jigsaw.target() : overrides.targetName().orElseGet(jigsaw::target);
+		ResourceKey<DynamicJigsawPool> originalKey = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, jigsaw.pool().identifier());
+		ResourceKey<DynamicJigsawPool> targetPoolKey = overrides == null
+			? originalKey 
+			: overrides.targetPool().orElse(originalKey);
 		BlockPos pos = jigsaw.info().pos();
 		FrontAndTop orientation = jigsaw.info().state().getValue(JigsawBlock.ORIENTATION);
-		// pool could refer to minecraft:empty or structurebuddy:empty, just check the path
-		if (!targetName.equals(EMPTY_NAME) && !targetPoolLocation.getPath().equals("empty"))
+		if (!targetName.equals(EMPTY_NAME) && targetPoolKey != DynamicJigsawPool.EMPTY)
 		{
 			connectionsToChildren.add(new JigsawConnectionToChild(
 				pos,
 				orientation,
-				jigsaw.jointType(),
-				ResourceKey.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, targetPoolLocation),
+				overrides == null ? jigsaw.jointType() : overrides.jointType().orElseGet(jigsaw::jointType),
+				targetPoolKey,
 				targetName
 			));
 		}
@@ -283,9 +288,9 @@ public record DynamicJigsawResult(
 					new JigsawConnectionToParent(
 						jigsaw.info().pos(),
 						jigsaw.info().state().getValue(JigsawBlock.ORIENTATION),
-						jigsaw.name(),
-						jigsaw.placementPriority()),
-					jigsaw.selectionPriority()));
+						name,
+						overrides == null ? jigsaw.placementPriority() : overrides.placementPriority().orElseGet(jigsaw::placementPriority)),
+					overrides == null ? jigsaw.selectionPriority() : overrides.selectionPriority().orElseGet(jigsaw::selectionPriority)));
 		}
 	}
 }

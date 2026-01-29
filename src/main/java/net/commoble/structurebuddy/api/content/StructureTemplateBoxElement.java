@@ -3,6 +3,7 @@ package net.commoble.structurebuddy.api.content;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.function.Consumers;
@@ -18,6 +19,7 @@ import net.commoble.structurebuddy.api.BoxSnap.FaceBoxSnap;
 import net.commoble.structurebuddy.api.DynamicJigsawResult;
 import net.commoble.structurebuddy.api.JigsawConnectionToChild;
 import net.commoble.structurebuddy.api.JigsawConnectionToParent;
+import net.commoble.structurebuddy.api.JigsawOverrides;
 import net.commoble.structurebuddy.api.PieceFiller;
 import net.commoble.structurebuddy.api.SelectableJigsawConnectionToParent;
 import net.commoble.structurebuddy.api.SnapResult;
@@ -44,12 +46,14 @@ import net.neoforged.neoforge.registries.DeferredHolder;
  * @param location Identifier of structure template
  * @param processors Optional StructureProcessorList to apply to structure template while placing blocks into world
  * @param overrideLiquidSettings Optional LiquidSettings to override for this jigsaw piece instead of using the root Structure liquid settings
+ * @param jigsawOverrides Map of jigsaw name to JigsawOverrides to apply to jigsaws with that name
  * @param snap BoxSnap indicating directions of available surfaces to snap to if possible. Template position will be randomized on non-snapping axes.
  */
 public record StructureTemplateBoxElement(
 	Identifier location,
 	Optional<Holder<StructureProcessorList>> processors,
 	Optional<LiquidSettings> overrideLiquidSettings,
+	Map<Identifier, JigsawOverrides> jigsawOverrides,
 	BoxSnap snap) implements BoxElement
 {
 
@@ -66,6 +70,13 @@ public record StructureTemplateBoxElement(
 		"location": "yourmod:some_structure_template", // id of structure nbt file
 		"processors": "yourmod:some_processor_list", // id of processor list file; optional, defaults to no processors
 		"override_liquid_settings": true // optional, if not true or false then defaults to liquid settings from structure json
+		"jigsaw_overrides": { // optional map
+			"yourmod:bottom": { // name of jigsaw, can override jigsaw parameters for jigsaws with this name
+				"name": "yourmod:stairs_bottom",
+				"target_pool": "yourmod:stairs_going_down",
+				"target_name": "yourmod:stairs_top"
+			}
+		},
 		"snap": "floor" // optional, defaults to floor
 	}
 	</pre>
@@ -74,6 +85,7 @@ public record StructureTemplateBoxElement(
 			Identifier.CODEC.fieldOf("location").forGetter(StructureTemplateBoxElement::location),
 			StructureProcessorType.LIST_CODEC.optionalFieldOf("processors").forGetter(StructureTemplateBoxElement::processors),
 			LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter(StructureTemplateBoxElement::overrideLiquidSettings),
+			JigsawOverrides.BY_JIGSAW_NAME_CODEC.optionalFieldOf("jigsaw_overrides", Map.of()).forGetter(StructureTemplateBoxElement::jigsawOverrides),
 			BoxSnap.CODEC.optionalFieldOf("snap", FaceBoxSnap.FLOOR).forGetter(StructureTemplateBoxElement::snap)
 		).apply(builder, StructureTemplateBoxElement::new));
 
@@ -103,7 +115,7 @@ public record StructureTemplateBoxElement(
 		while (!jigsaws.isEmpty())
 		{
 			JigsawBlockInfo jigsaw = jigsaws.remove(generationContext.random().nextInt(jigsaws.size()));
-			DynamicJigsawResult.addConnectionsFromTemplateJigsaw(jigsaw, shuffledConnectionsToParent, connectionsToChildren);
+			DynamicJigsawResult.addConnectionsFromTemplateJigsaw(jigsaw, shuffledConnectionsToParent, connectionsToChildren, this.jigsawOverrides);
 		}
 		shuffledConnectionsToParent.sort(Comparator.comparingInt(SelectableJigsawConnectionToParent::selectionPriority).reversed());
 		List<JigsawConnectionToParent> selectedConnectionsToParent = new ArrayList<>(shuffledConnectionsToParent.size());
