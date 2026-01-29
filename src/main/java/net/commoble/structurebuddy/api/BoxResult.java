@@ -2,6 +2,7 @@ package net.commoble.structurebuddy.api;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.function.Consumers;
 
@@ -10,8 +11,9 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 /**
  * Result of baking a {@link BoxElement} into a {@link BoundingBox} of a known size.
- * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+ * @param pieceFiller Supplier of a PieceFiller which will be serialized in the StructurePiece in region files,
  * and used later to fill the piece when overlapping chunks generate.
+ * The supplier will be run after the jigsaw piece being baked is selected for placement and it has run any jigsaw data updates.
  * @param localBoundingBox BoundingBox to be provided to {@link PieceFiller#fill}.
  * Must be relative to the coordinates of the box provided by {@link BoxElement#bake}.
  * Consumers of the DynamicBoxResult should refuse to generate anything if localBoundingBox is not contained by the
@@ -22,7 +24,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * which will run if these results are selected to add a piece to the structure.
  */
 public record BoxResult(
-	PieceFiller pieceFiller,
+	Supplier<PieceFiller> pieceFiller,
 	BoundingBox localBoundingBox,
 	List<JigsawConnectionToParent> connectionsToParent,
 	List<JigsawConnectionToChild> connectionsToChildren,
@@ -41,7 +43,7 @@ public record BoxResult(
 	public static BoxResult empty(BoundingBox box)
 	{
 		return new BoxResult(
-			EmptyPieceFiller.INSTANCE,
+			EmptyPieceFiller::empty,
 			box,
 			List.of(),
 			List.of(),
@@ -60,7 +62,7 @@ public record BoxResult(
 	public static BoxResult invalid()
 	{
 		return new BoxResult(
-			EmptyPieceFiller.INSTANCE,
+			EmptyPieceFiller::empty,
 			BoundingBox.infinite(),
 			List.of(),
 			List.of(),

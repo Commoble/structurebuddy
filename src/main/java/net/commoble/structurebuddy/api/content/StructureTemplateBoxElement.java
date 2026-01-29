@@ -149,6 +149,6 @@ public record StructureTemplateBoxElement(
 		}
 		
 		PieceFiller pieceFiller = new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings);
-		return new BoxResult(pieceFiller, finalBox, finalConnectionsToParent, finalConnectionsToChild, Consumers.nop());
+		return new BoxResult(() -> pieceFiller, finalBox, finalConnectionsToParent, finalConnectionsToChild, Consumers.nop());
 	}
 }

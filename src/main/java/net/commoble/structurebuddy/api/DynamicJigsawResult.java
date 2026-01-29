@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.function.Consumers;
 import org.jspecify.annotations.Nullable;
@@ -24,8 +25,9 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
  * If any connections to parent are compatible with the parent jigsaw being processed,
  * the baking jigsaw piece will be placed into the structure and further processing will be attempted
  * on this piece's children, if any
- * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+ * @param pieceFiller Supplier of a PieceFiller which will be serialized in the StructurePiece in region files,
  * and used later to fill the piece when overlapping chunks generate.
+ * The supplier will be run after the jigsaw piece being baked is selected for placement and it has run any jigsaw data updates.
  * @param localBoundingBox BoundingBox of the structure piece.
  * Does not need to be in absolute world coordinates or any reference frame in particular,
  * will be moved to the correct location based on which jigsaw connector is chosen.
@@ -46,7 +48,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
  * which will run if these results are selected to add a piece to the structure.
  */
 public record DynamicJigsawResult(
-	PieceFiller pieceFiller,
+	Supplier<PieceFiller> pieceFiller,
 	BoundingBox localBoundingBox,
 	List<JigsawConnectionToParent> shuffledLocalConnectionsToParent,
 	List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren,
@@ -55,7 +57,7 @@ public record DynamicJigsawResult(
 	/** {@return Empty DynamicJigsawResult indicating no piece can be created or connected} **/
 	public static DynamicJigsawResult invalid()
 	{
-		return new DynamicJigsawResult(EmptyPieceFiller.INSTANCE, BoundingBox.infinite(), List.of(), List.of(), Consumers.nop());
+		return new DynamicJigsawResult(EmptyPieceFiller::empty, BoundingBox.infinite(), List.of(), List.of(), Consumers.nop());
 	}
 
 	/** minecraft:empty as a child jigsaw name indicates it should not be a child, and as a target jigsaw name of a parent indicates it should not be a parent */
@@ -63,8 +65,9 @@ public record DynamicJigsawResult(
 	
 	/**
 	 * {@return DynamicJigsawResult with parent but no children}
-	 * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+	 * @param pieceFiller Supplier of a PieceFiller which will be serialized in the StructurePiece in region files,
 	 * and used later to fill the piece when overlapping chunks generate.
+	 * The supplier will be run after the jigsaw piece being baked is selected for placement and it has run any jigsaw data updates.
 	 * @param localBoundingBox BoundingBox of the structure piece.
 	 * Does not need to be in absolute world coordinates or any reference frame in particular,
 	 * will be moved to the correct location based on which jigsaw connector is chosen.
@@ -75,15 +78,16 @@ public record DynamicJigsawResult(
 	 * otherwise otherwise-valid connections may be unexpectedly rejected.
 	 * due to optimization assumptions.
 	 */
-	public static DynamicJigsawResult withParents(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent)
+	public static DynamicJigsawResult withParents(Supplier<PieceFiller> pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent)
 	{
 		return withParents(pieceFiller, localBoundingBox, shuffledLocalConnectionsToParent, Consumers.nop());
 	}
 	
 	/**
 	 * {@return DynamicJigsawResult with parent but no children}
-	 * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+	 * @param pieceFiller Supplier of a PieceFiller which will be serialized in the StructurePiece in region files,
 	 * and used later to fill the piece when overlapping chunks generate.
+	 * The supplier will be run after the jigsaw piece being baked is selected for placement and it has run any jigsaw data updates.
 	 * @param localBoundingBox BoundingBox of the structure piece.
 	 * Does not need to be in absolute world coordinates or any reference frame in particular,
 	 * will be moved to the correct location based on which jigsaw connector is chosen.
@@ -96,15 +100,16 @@ public record DynamicJigsawResult(
 	 * @param onSelected Consumer to apply modifications to shared jigsaw piece data,
 	 * which will run if these results are selected to add a piece to the structure.
 	 */
-	public static DynamicJigsawResult withParents(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, Consumer<JigsawDataAccess> onSelected)
+	public static DynamicJigsawResult withParents(Supplier<PieceFiller> pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, Consumer<JigsawDataAccess> onSelected)
 	{
 		return new DynamicJigsawResult(pieceFiller, localBoundingBox, shuffledLocalConnectionsToParent, List.of(), onSelected);
 	}
 	
 	/**
 	 * {@return DynamicJigsawResult with children but no parent (only valid for start pieces)}
-	 * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+	 * @param pieceFiller Supplier of a PieceFiller which will be serialized in the StructurePiece in region files,
 	 * and used later to fill the piece when overlapping chunks generate.
+	 * The supplier will be run after the jigsaw piece being baked is selected for placement and it has run any jigsaw data updates.
 	 * @param localBoundingBox BoundingBox of the structure piece.
 	 * Does not need to be in absolute world coordinates or any reference frame in particular,
 	 * will be moved to the correct location based on which jigsaw connector is chosen.
@@ -116,15 +121,16 @@ public record DynamicJigsawResult(
 	 * A connection to child can be in the same position as a connection to parent,
 	 * if connection to parent becomes used then connection to child at that pos will just be ignored.
 	 */
-	public static DynamicJigsawResult withChildren(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren)
+	public static DynamicJigsawResult withChildren(Supplier<PieceFiller> pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren)
 	{
 		return withChildren(pieceFiller, localBoundingBox, shuffledLocalConnectionsToChildren, Consumers.nop());
 	}
 	
 	/**
 	 * {@return DynamicJigsawResult with children but no parent (only valid for start pieces)}
-	 * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+	 * @param pieceFiller Supplier of a PieceFiller which will be serialized in the StructurePiece in region files,
 	 * and used later to fill the piece when overlapping chunks generate.
+	 * The supplier will be run after the jigsaw piece being baked is selected for placement and it has run any jigsaw data updates.
 	 * @param localBoundingBox BoundingBox of the structure piece.
 	 * Does not need to be in absolute world coordinates or any reference frame in particular,
 	 * will be moved to the correct location based on which jigsaw connector is chosen.
@@ -138,15 +144,16 @@ public record DynamicJigsawResult(
 	 * @param onSelected Consumer to apply modifications to shared jigsaw piece data,
 	 * which will run if these results are selected to add a piece to the structure.
 	 */
-	public static DynamicJigsawResult withChildren(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren, Consumer<JigsawDataAccess> onSelected)
+	public static DynamicJigsawResult withChildren(Supplier<PieceFiller> pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren, Consumer<JigsawDataAccess> onSelected)
 	{
 		return new DynamicJigsawResult(pieceFiller, localBoundingBox, List.of(), shuffledLocalConnectionsToChildren, onSelected);
 	}
 	
 	/**
 	 * Just runs the normal constructor, but the name helps remember which order the connection list params are
-	 * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+	 * @param pieceFiller Supplier of a PieceFiller which will be serialized in the StructurePiece in region files,
 	 * and used later to fill the piece when overlapping chunks generate.
+	 * The supplier will be run after the jigsaw piece being baked is selected for placement and it has run any jigsaw data updates.
 	 * @param localBoundingBox BoundingBox of the structure piece.
 	 * Does not need to be in absolute world coordinates or any reference frame in particular,
 	 * will be moved to the correct location based on which jigsaw connector is chosen.
@@ -165,15 +172,16 @@ public record DynamicJigsawResult(
 	 * if connection to parent becomes used then connection to child at that pos will just be ignored.
 	 * @return DynamicJigsawResult
 	 */
-	public static DynamicJigsawResult withParentsAndChildren(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren)
+	public static DynamicJigsawResult withParentsAndChildren(Supplier<PieceFiller> pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren)
 	{
 		return withParentsAndChildren(pieceFiller, localBoundingBox, shuffledLocalConnectionsToParent, shuffledLocalConnectionsToChildren, Consumers.nop());
 	}
 	
 	/**
 	 * Just runs the normal constructor, but the name helps remember which order the connection list params are
-	 * @param pieceFiller PieceFiller which will be serialized in the StructurePiece in region files,
+	 * @param pieceFiller Supplier of a PieceFiller which will be serialized in the StructurePiece in region files,
 	 * and used later to fill the piece when overlapping chunks generate.
+	 * The supplier will be run after the jigsaw piece being baked is selected for placement and it has run any jigsaw data updates.
 	 * @param localBoundingBox BoundingBox of the structure piece.
 	 * Does not need to be in absolute world coordinates or any reference frame in particular,
 	 * will be moved to the correct location based on which jigsaw connector is chosen.
@@ -194,7 +202,7 @@ public record DynamicJigsawResult(
 	 * which will run if these results are selected to add a piece to the structure.
 	 * @return DynamicJigsawResult
 	 */
-	public static DynamicJigsawResult withParentsAndChildren(PieceFiller pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren, Consumer<JigsawDataAccess> onSelected)
+	public static DynamicJigsawResult withParentsAndChildren(Supplier<PieceFiller> pieceFiller, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren, Consumer<JigsawDataAccess> onSelected)
 	{
 		return new DynamicJigsawResult(pieceFiller, localBoundingBox, shuffledLocalConnectionsToParent, shuffledLocalConnectionsToChildren, onSelected);
 	}

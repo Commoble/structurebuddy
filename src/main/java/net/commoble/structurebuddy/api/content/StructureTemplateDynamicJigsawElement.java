@@ -15,6 +15,7 @@ import net.commoble.structurebuddy.api.DynamicJigsawResult;
 import net.commoble.structurebuddy.api.JigsawConnectionToChild;
 import net.commoble.structurebuddy.api.JigsawConnectionToParent;
 import net.commoble.structurebuddy.api.JigsawOverrides;
+import net.commoble.structurebuddy.api.PieceFiller;
 import net.commoble.structurebuddy.api.SelectableJigsawConnectionToParent;
 import net.commoble.structurebuddy.api.StructureBuddy;
 import net.commoble.structurebuddy.api.StructureBuddyRegistries;
@@ -105,6 +106,7 @@ public record StructureTemplateDynamicJigsawElement(
 		{
 			selectedConnectionsToParent.add(selectable.connection());
 		}
-		return DynamicJigsawResult.withParentsAndChildren(new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings), localBoundingBox, selectedConnectionsToParent, connectionsToChildren);
+		PieceFiller pieceFiller = new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings);
+		return DynamicJigsawResult.withParentsAndChildren(() -> pieceFiller, localBoundingBox, selectedConnectionsToParent, connectionsToChildren);
 	}
 }

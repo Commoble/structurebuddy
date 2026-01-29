@@ -17,6 +17,14 @@ public enum EmptyPieceFiller implements PieceFiller
 	/** the singleton instance */
 	INSTANCE;
 	
+	/**
+	 * {@return the EmptyPieceFiller instance }
+	 */
+	public static final EmptyPieceFiller empty()
+	{
+		return INSTANCE;
+	}
+	
 	/** structurebuddy:piece_filler_type / structurebuddy:empty */
 	public static final ResourceKey<MapCodec<? extends PieceFiller>> KEY = ResourceKey.create(StructureBuddyRegistries.PIECE_FILLER_TYPE, StructureBuddy.id("empty"));
 	/** holder */

@@ -91,9 +91,11 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 		
 		JigsawData jigsawData = new JigsawData(new HashMap<>(), new HashMap<>());
 		DynamicJigsawResult results = startElement.bake(new DynamicJigsawBakeContext(context, new SubtractiveOctree.NonEmpty(BoundingBox.infinite()), null, NO_AVAILABLE_CONNECTIONS, jigsawData, rotation, params.liquidSettings()));
-		PieceFiller pieceFiller = results.pieceFiller();
 		BoundingBox startBounds = results.boundingBox(chunkCornerPos);
 		List<JigsawConnectionToChild> shuffledJigsawsConnectingToChildren = results.offsetShuffledConnectionsToChildren(chunkCornerPos);
+
+		results.onSelected().accept(jigsawData);
+		PieceFiller pieceFiller = results.pieceFiller().get();
 		
 		DynamicJigsawStructurePiece startPiece = new DynamicJigsawStructurePiece(
 			structureTemplateManager,
@@ -102,7 +104,6 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			startBounds,
 			0,
 			params.liquidSettings());
-		results.onSelected().accept(jigsawData);
 		
 		int centerX = (startBounds.maxX() + startBounds.minX()) / 2;
 		int centerZ = (startBounds.maxZ() + startBounds.minZ()) / 2;
@@ -236,7 +237,6 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 					JigsawData childData = parentData.fork();
 					DynamicJigsawResult childResults = childElement.bake(new DynamicJigsawBakeContext(context, permittedSpace, parentJigsaw, remainingConnections, childData, childRotation, liquidSettings));
 					List<JigsawConnectionToParent> localChildJigsaws = childResults.shuffledLocalConnectionsToParent();
-					PieceFiller childPieceFiller = childResults.pieceFiller();
 					for (JigsawConnectionToParent localChildJigsaw : localChildJigsaws)
 					{
 						if (parentJigsaw.canAttach(localChildJigsaw))
@@ -251,9 +251,10 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 							{
 								permittedSpace.subtract(childBounds);
 								int nextDepth = state.depth() + 1;
+								childResults.onSelected().accept(childData);
+								PieceFiller childPieceFiller = childResults.pieceFiller().get();
 								DynamicJigsawStructurePiece childPiece = new DynamicJigsawStructurePiece(this.structureTemplateManager, childPieceFiller, childRotation, childBounds, nextDepth, liquidSettings);
 								this.pieces.add(childPiece);
-								childResults.onSelected().accept(childData);
 								if (nextDepth <= this.maxDepth)
 								{
 									List<JigsawConnectionToChild> absoluteChildJigsaws = childResults.offsetShuffledConnectionsToChildren(childPieceOffset);
