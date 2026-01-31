@@ -133,7 +133,7 @@ public record LooperDynamicJigsawElement(
 									this.jigsawName));
 							// only need the start jigsaw, not the end
 							// because we seal off the child connection by placing our box there
-							return DynamicJigsawResult.withParents(() -> pieceFiller, requiredBounds, jigsaws);
+							return DynamicJigsawResult.withParents(data -> pieceFiller, requiredBounds, jigsaws);
 						}
 					}
 				}
@@ -155,7 +155,7 @@ public record LooperDynamicJigsawElement(
 				JointType.ALIGNED,
 				this.targetPool,
 				this.targetJigsawName);
-		return DynamicJigsawResult.withParentsAndChildren(() -> pieceFiller, boundingBox, List.of(connectionToParent), List.of(connectionToChild));
+		return DynamicJigsawResult.withParentsAndChildren(data -> pieceFiller, boundingBox, List.of(connectionToParent), List.of(connectionToChild));
 	}
 
 	public static record LooperPieceFiller(BlockPos startPos, Direction startDir, Direction endDir, int length, int width, Block block) implements PieceFiller

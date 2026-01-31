@@ -12,6 +12,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.commoble.structurebuddy.api.DynamicJigsawBakeContext;
 import net.commoble.structurebuddy.api.DynamicJigsawElement;
 import net.commoble.structurebuddy.api.DynamicJigsawResult;
+import net.commoble.structurebuddy.api.DynamicProcessor;
 import net.commoble.structurebuddy.api.JigsawConnectionToChild;
 import net.commoble.structurebuddy.api.JigsawConnectionToParent;
 import net.commoble.structurebuddy.api.JigsawOverrides;
@@ -28,8 +29,6 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure.GenerationContext;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.JigsawBlockInfo;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -37,13 +36,13 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 /**
  * DynamicJigsawElement which places a structure template (i.e. structure nbt file) analogous to SinglePoolElement in vanilla jigsaw structures
  * @param location Identifier of structure template
- * @param processors Optional StructureProcessorList to apply to structure template while placing blocks into world
+ * @param processors Optional List of DynamicProcessors to apply to structure template while placing blocks into world
  * @param overrideLiquidSettings Optional LiquidSettings to override for this jigsaw piece instead of using the root Structure liquid settings
  * @param jigsawOverrides Map of jigsaw name to JigsawOverrides to apply to jigsaws with that name
  */
 public record StructureTemplateDynamicJigsawElement(
 	Identifier location,
-	Optional<Holder<StructureProcessorList>> processors,
+	Optional<Holder<List<DynamicProcessor>>> processors,
 	Optional<LiquidSettings> overrideLiquidSettings,
 	Map<Identifier,JigsawOverrides> jigsawOverrides
 	) implements DynamicJigsawElement
@@ -73,7 +72,7 @@ public record StructureTemplateDynamicJigsawElement(
 	 */
 	public static final MapCodec<StructureTemplateDynamicJigsawElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
 			Identifier.CODEC.fieldOf("location").forGetter(StructureTemplateDynamicJigsawElement::location),
-			StructureProcessorType.LIST_CODEC.optionalFieldOf("processors").forGetter(StructureTemplateDynamicJigsawElement::processors),
+			DynamicProcessor.LIST_HOLDER_CODEC.optionalFieldOf("processors").forGetter(StructureTemplateDynamicJigsawElement::processors),
 			LiquidSettings.CODEC.optionalFieldOf("override_liquid_sttings").forGetter(StructureTemplateDynamicJigsawElement::overrideLiquidSettings),
 			JigsawOverrides.BY_JIGSAW_NAME_CODEC.optionalFieldOf("jigsaw_overrides", Map.of()).forGetter(StructureTemplateDynamicJigsawElement::jigsawOverrides)
 		).apply(builder, StructureTemplateDynamicJigsawElement::new));
@@ -107,6 +106,6 @@ public record StructureTemplateDynamicJigsawElement(
 			selectedConnectionsToParent.add(selectable.connection());
 		}
 		PieceFiller pieceFiller = new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings);
-		return DynamicJigsawResult.withParentsAndChildren(() -> pieceFiller, localBoundingBox, selectedConnectionsToParent, connectionsToChildren);
+		return DynamicJigsawResult.withParentsAndChildren(data -> pieceFiller, localBoundingBox, selectedConnectionsToParent, connectionsToChildren);
 	}
 }

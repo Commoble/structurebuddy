@@ -24,6 +24,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
  * @param structureTemplateManager StructureTemplateManager holding structure nbt templates.
  * @param rotation Rotation of the structure piece
  * @param liquidSettings LiquidSettings indicating whether to preserve waterlogging from world into placed blocks
+ * @param jigsawData JigsawDataReader of data available to this jigsaw piece as set during piece baking
  */
 public record DynamicJigsawFillContext(
 	WorldGenLevel level,
@@ -36,6 +37,7 @@ public record DynamicJigsawFillContext(
 	BoundingBox pieceBoundingBox,
 	StructureTemplateManager structureTemplateManager,
 	Rotation rotation,
-	LiquidSettings liquidSettings) {
+	LiquidSettings liquidSettings,
+	JigsawPieceDataReader jigsawData) {
 	
 }

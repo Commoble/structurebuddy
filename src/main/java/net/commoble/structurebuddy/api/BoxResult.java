@@ -2,7 +2,7 @@ package net.commoble.structurebuddy.api;
 
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.function.Consumers;
 
@@ -11,7 +11,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 /**
  * Result of baking a {@link BoxElement} into a {@link BoundingBox} of a known size.
- * @param pieceFiller Supplier of a PieceFiller which will be serialized in the StructurePiece in region files,
+ * @param pieceFillerFactory Function returning a PieceFiller which will be serialized in the StructurePiece in region files,
  * and used later to fill the piece when overlapping chunks generate.
  * The supplier will be run after the jigsaw piece being baked is selected for placement and it has run any jigsaw data updates.
  * @param localBoundingBox BoundingBox to be provided to {@link PieceFiller#fill}.
@@ -24,7 +24,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * which will run if these results are selected to add a piece to the structure.
  */
 public record BoxResult(
-	Supplier<PieceFiller> pieceFiller,
+	Function<JigsawDataReader, PieceFiller> pieceFillerFactory,
 	BoundingBox localBoundingBox,
 	List<JigsawConnectionToParent> connectionsToParent,
 	List<JigsawConnectionToChild> connectionsToChildren,

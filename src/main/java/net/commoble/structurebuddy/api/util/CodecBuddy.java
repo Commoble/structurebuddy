@@ -70,4 +70,19 @@ public final class CodecBuddy
 			return registry.byNameCodec().dispatch(typeCodec, Function.identity());
 		});
 	}
+	
+	/**
+	 * {@return lazy initialized Codec for objects of the given registry (serializes to object identifier}
+	 * @param <T> Type of things in the registry
+	 * @param registryKey ResourceKey of the registry to make a codec for
+	 */
+	public static <T> Codec<T> registryCodec(ResourceKey<Registry<T>> registryKey)
+	{
+		return Codec.lazyInitialized(() -> {
+			Registry<?> uncastRegistry = Objects.requireNonNull(BuiltInRegistries.REGISTRY.getValue(registryKey.identifier())); // makes eclipse's nullchecker happy
+			@SuppressWarnings("unchecked")
+			Registry<T> castRegistry = (Registry<T>)uncastRegistry;
+			return castRegistry.byNameCodec();
+		});
+	}
 }

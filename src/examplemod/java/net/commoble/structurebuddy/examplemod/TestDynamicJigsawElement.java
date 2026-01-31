@@ -101,7 +101,7 @@ public record TestDynamicJigsawElement(
 		}
 			
 		
-		return DynamicJigsawResult.withParentsAndChildren(() -> pieceFiller, box, connectionsToParent, connectionsToChildren);
+		return DynamicJigsawResult.withParentsAndChildren(data -> pieceFiller, box, connectionsToParent, connectionsToChildren);
 	}
 	
 	public BlockPos getJigsawPos(BoundingBox box, Direction dir, RandomSource rand)

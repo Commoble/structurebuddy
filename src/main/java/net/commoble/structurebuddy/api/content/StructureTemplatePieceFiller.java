@@ -1,11 +1,13 @@
 package net.commoble.structurebuddy.api.content;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.commoble.structurebuddy.api.DynamicJigsawFillContext;
+import net.commoble.structurebuddy.api.DynamicProcessor;
 import net.commoble.structurebuddy.api.PieceFiller;
 import net.commoble.structurebuddy.api.StructureBuddy;
 import net.commoble.structurebuddy.api.StructureBuddyRegistries;
@@ -18,20 +20,18 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnorePr
 import net.minecraft.world.level.levelgen.structure.templatesystem.JigsawReplacementProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 /**
  * PieceFiller which places a structure template (i.e. structure nbt file) analogous to SinglePoolElement in vanilla jigsaw structures
  * @param location Identifier of structure template
- * @param processors Optional StructureProcessorList to apply to structure template while placing blocks into world
+ * @param processors Optional List of processors to apply to structure template while placing blocks into world
  * @param overrideLiquidSettings Optional LiquidSettings to override for this jigsaw piece instead of using the root Structure liquid settings
  */
 public record StructureTemplatePieceFiller(
 	Identifier location,
-	Optional<Holder<StructureProcessorList>> processors,
+	Optional<Holder<List<DynamicProcessor>>> processors,
 	Optional<LiquidSettings> overrideLiquidSettings
 	) implements PieceFiller
 {
@@ -54,7 +54,7 @@ public record StructureTemplatePieceFiller(
 	 */
 	public static final MapCodec<StructureTemplatePieceFiller> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
 			Identifier.CODEC.fieldOf("location").forGetter(StructureTemplatePieceFiller::location),
-			StructureProcessorType.LIST_CODEC.optionalFieldOf("processors").forGetter(StructureTemplatePieceFiller::processors),
+			DynamicProcessor.LIST_HOLDER_CODEC.optionalFieldOf("processors").forGetter(StructureTemplatePieceFiller::processors),
 			LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter(StructureTemplatePieceFiller::overrideLiquidSettings)
 		).apply(builder, StructureTemplatePieceFiller::new));
 
@@ -78,7 +78,7 @@ public record StructureTemplatePieceFiller(
         placeSettings.setLiquidSettings(this.overrideLiquidSettings().orElse(context.liquidSettings()));
         // we don't need to retain jigsaws because vanilla jigsaw blocks can't generate our stuff anyway
         placeSettings.addProcessor(JigsawReplacementProcessor.INSTANCE);
-        this.processors.ifPresent(processors -> processors.value().list().forEach(placeSettings::addProcessor));
+        this.processors.ifPresent(processors -> placeSettings.addProcessor(new DynamicProcessorListProcessor(processors, context.jigsawData().toMap())));
         BoundingBox pieceBounds = context.pieceBoundingBox();
         BlockPos piecePos = new BlockPos(pieceBounds.minX(), pieceBounds.minY(), pieceBounds.minZ());
         // again, the rotation causes the placement box to be not quite where we want it to be

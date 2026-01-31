@@ -3,6 +3,7 @@ package net.commoble.structurebuddy.api.content;
 import com.mojang.serialization.MapCodec;
 
 import net.commoble.structurebuddy.api.DynamicJigsawFillContext;
+import net.commoble.structurebuddy.api.JigsawDataReader;
 import net.commoble.structurebuddy.api.PieceFiller;
 import net.commoble.structurebuddy.api.StructureBuddy;
 import net.commoble.structurebuddy.api.StructureBuddyRegistries;
@@ -18,9 +19,10 @@ public enum EmptyPieceFiller implements PieceFiller
 	INSTANCE;
 	
 	/**
-	 * {@return the EmptyPieceFiller instance }
+	 * {@return the EmptyPieceFiller instance}
+	 * @param data JigsawDataReader but it doesn't matter, this just returns the empty instance
 	 */
-	public static final EmptyPieceFiller empty()
+	public static final EmptyPieceFiller empty(JigsawDataReader data)
 	{
 		return INSTANCE;
 	}

@@ -89,7 +89,7 @@ public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature
 			this.jigsawName);
 		// would be nice if we could configure this to generate before or after other pieces
 		// but placement priority only affects jigsaw assembling for child jigsaws, of which we have none, not adding-blocks-to-chunks
-		return new DynamicJigsawResult(() -> pieceFiller, boundingBox, List.of(jigsaw), List.of(), Consumers.nop());
+		return new DynamicJigsawResult(data -> pieceFiller, boundingBox, List.of(jigsaw), List.of(), Consumers.nop());
 	}
 	
 	/**

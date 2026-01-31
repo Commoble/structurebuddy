@@ -17,6 +17,7 @@ import net.commoble.structurebuddy.api.BoxResult;
 import net.commoble.structurebuddy.api.BoxSnap;
 import net.commoble.structurebuddy.api.BoxSnap.FaceBoxSnap;
 import net.commoble.structurebuddy.api.DynamicJigsawResult;
+import net.commoble.structurebuddy.api.DynamicProcessor;
 import net.commoble.structurebuddy.api.JigsawConnectionToChild;
 import net.commoble.structurebuddy.api.JigsawConnectionToParent;
 import net.commoble.structurebuddy.api.JigsawOverrides;
@@ -35,8 +36,6 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure.GenerationContext;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.JigsawBlockInfo;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -44,14 +43,14 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 /**
  * BoxElement which bakes some structure template (.nbt structure file) into a box
  * @param location Identifier of structure template
- * @param processors Optional StructureProcessorList to apply to structure template while placing blocks into world
+ * @param processors Optional List of DynamicProcessors to apply to structure template while placing blocks into world
  * @param overrideLiquidSettings Optional LiquidSettings to override for this jigsaw piece instead of using the root Structure liquid settings
  * @param jigsawOverrides Map of jigsaw name to JigsawOverrides to apply to jigsaws with that name
  * @param snap BoxSnap indicating directions of available surfaces to snap to if possible. Template position will be randomized on non-snapping axes.
  */
 public record StructureTemplateBoxElement(
 	Identifier location,
-	Optional<Holder<StructureProcessorList>> processors,
+	Optional<Holder<List<DynamicProcessor>>> processors,
 	Optional<LiquidSettings> overrideLiquidSettings,
 	Map<Identifier, JigsawOverrides> jigsawOverrides,
 	BoxSnap snap) implements BoxElement
@@ -83,7 +82,7 @@ public record StructureTemplateBoxElement(
 	 */
 	public static final MapCodec<StructureTemplateBoxElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
 			Identifier.CODEC.fieldOf("location").forGetter(StructureTemplateBoxElement::location),
-			StructureProcessorType.LIST_CODEC.optionalFieldOf("processors").forGetter(StructureTemplateBoxElement::processors),
+			DynamicProcessor.LIST_HOLDER_CODEC.optionalFieldOf("processors").forGetter(StructureTemplateBoxElement::processors),
 			LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter(StructureTemplateBoxElement::overrideLiquidSettings),
 			JigsawOverrides.BY_JIGSAW_NAME_CODEC.optionalFieldOf("jigsaw_overrides", Map.of()).forGetter(StructureTemplateBoxElement::jigsawOverrides),
 			BoxSnap.CODEC.optionalFieldOf("snap", FaceBoxSnap.FLOOR).forGetter(StructureTemplateBoxElement::snap)
@@ -149,6 +148,6 @@ public record StructureTemplateBoxElement(
 		}
 		
 		PieceFiller pieceFiller = new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings);
-		return new BoxResult(() -> pieceFiller, finalBox, finalConnectionsToParent, finalConnectionsToChild, Consumers.nop());
+		return new BoxResult(data -> pieceFiller, finalBox, finalConnectionsToParent, finalConnectionsToChild, Consumers.nop());
 	}
 }

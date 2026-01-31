@@ -32,8 +32,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Holder.Reference;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.block.Rotation;
@@ -95,7 +95,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 		List<JigsawConnectionToChild> shuffledJigsawsConnectingToChildren = results.offsetShuffledConnectionsToChildren(chunkCornerPos);
 
 		results.onSelected().accept(jigsawData);
-		PieceFiller pieceFiller = results.pieceFiller().get();
+		PieceFiller pieceFiller = results.pieceFillerFactory().apply(jigsawData);
 		
 		DynamicJigsawStructurePiece startPiece = new DynamicJigsawStructurePiece(
 			structureTemplateManager,
@@ -103,7 +103,8 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			rotation,
 			startBounds,
 			0,
-			params.liquidSettings());
+			params.liquidSettings(),
+			jigsawData.toMap());
 		
 		int centerX = (startBounds.maxX() + startBounds.minX()) / 2;
 		int centerZ = (startBounds.maxZ() + startBounds.minZ()) / 2;
@@ -252,8 +253,8 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 								permittedSpace.subtract(childBounds);
 								int nextDepth = state.depth() + 1;
 								childResults.onSelected().accept(childData);
-								PieceFiller childPieceFiller = childResults.pieceFiller().get();
-								DynamicJigsawStructurePiece childPiece = new DynamicJigsawStructurePiece(this.structureTemplateManager, childPieceFiller, childRotation, childBounds, nextDepth, liquidSettings);
+								PieceFiller childPieceFiller = childResults.pieceFillerFactory().apply(childData);
+								DynamicJigsawStructurePiece childPiece = new DynamicJigsawStructurePiece(this.structureTemplateManager, childPieceFiller, childRotation, childBounds, nextDepth, liquidSettings, childData.toMap());
 								this.pieces.add(childPiece);
 								if (nextDepth <= this.maxDepth)
 								{

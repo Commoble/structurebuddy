@@ -10,19 +10,24 @@ import net.commoble.structurebuddy.api.BoxElement;
 import net.commoble.structurebuddy.api.BoxPool;
 import net.commoble.structurebuddy.api.DynamicJigsawElement;
 import net.commoble.structurebuddy.api.DynamicJigsawPool;
+import net.commoble.structurebuddy.api.DynamicProcessor;
 import net.commoble.structurebuddy.api.PieceFiller;
 import net.commoble.structurebuddy.api.StructureBuddy;
 import net.commoble.structurebuddy.api.StructureBuddyRegistries;
 import net.commoble.structurebuddy.api.content.DynamicJigsawStructure;
 import net.commoble.structurebuddy.api.content.DynamicJigsawStructurePiece;
+import net.commoble.structurebuddy.api.content.DynamicProcessorListProcessor;
 import net.commoble.structurebuddy.api.content.EmptyBoxElement;
 import net.commoble.structurebuddy.api.content.EmptyDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.EmptyPieceFiller;
 import net.commoble.structurebuddy.api.content.FeatureDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.FeatureDynamicJigsawElement.FeaturePieceFiller;
+import net.commoble.structurebuddy.api.content.NopDynamicProcessor;
+import net.commoble.structurebuddy.api.content.ProcessorListDynamicProcessor;
 import net.commoble.structurebuddy.api.content.StructureTemplateBoxElement;
 import net.commoble.structurebuddy.api.content.StructureTemplateDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.StructureTemplatePieceFiller;
+import net.commoble.structurebuddy.api.content.SubListDynamicProcessor;
 import net.commoble.structurebuddy.api.content.SubPoolBoxElement;
 import net.commoble.structurebuddy.api.content.SubPoolDynamicJigsawElement;
 import net.minecraft.core.Registry;
@@ -30,6 +35,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
@@ -50,16 +56,27 @@ public class StructureBuddyMod
 	public StructureBuddyMod()
 	{
 		IEventBus modBus = ModList.get().getModContainerById(StructureBuddy.MODID).get().getEventBus();
+		
 		// vanilla registries
 		DeferredRegister<StructurePieceType> structurePieceTypes = defreg(Registries.STRUCTURE_PIECE);
+		DeferredRegister<StructureProcessorType<?>> structureProcessorTypes = defreg(Registries.STRUCTURE_PROCESSOR);
 		DeferredRegister<StructureType<?>> structureTypes = defreg(Registries.STRUCTURE_TYPE);
+		
 		// custom registries
 		DeferredRegister<MapCodec<? extends BoxElement>> boxElementTypes = newRegistry(StructureBuddyRegistries.BOX_ELEMENT_TYPE);
 		DeferredRegister<MapCodec<? extends DynamicJigsawElement>> dynamicJigsawElementTypes = newRegistry(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT_TYPE);
+		DeferredRegister<MapCodec<? extends DynamicProcessor>> dynamicProcessorTypes = newRegistry(StructureBuddyRegistries.DYNAMIC_PROCESSOR_TYPE);
+		newRegistry(StructureBuddyRegistries.JIGSAW_DATA_TYPE);
 		DeferredRegister<MapCodec<? extends PieceFiller>> pieceFillerTypes = newRegistry(StructureBuddyRegistries.PIECE_FILLER_TYPE);
 
 		structurePieceTypes.register("dynamic_jigsaw",
 			() -> DynamicJigsawStructurePiece::new);
+		
+		structureProcessorTypes.register("dynamic_processor_list_processor", () -> {
+			// for whatever reason eclipse won't compile this without explicitly declaring the type
+			StructureProcessorType<DynamicProcessorListProcessor> type = () -> DynamicProcessorListProcessor.CODEC;
+			return type;
+		});
 		
 		structureTypes.<StructureType<DynamicJigsawStructure>>register(
 			"dynamic_jigsaw",
@@ -73,6 +90,10 @@ public class StructureBuddyMod
 		dynamicJigsawElementTypes.register(FeatureDynamicJigsawElement.HOLDER.getId().getPath(), () -> FeatureDynamicJigsawElement.CODEC);
 		dynamicJigsawElementTypes.register(StructureTemplateDynamicJigsawElement.HOLDER.getId().getPath(), () -> StructureTemplateDynamicJigsawElement.CODEC);
 		dynamicJigsawElementTypes.register(SubPoolDynamicJigsawElement.HOLDER.getId().getPath(), () -> SubPoolDynamicJigsawElement.CODEC);
+		
+		dynamicProcessorTypes.register(NopDynamicProcessor.HOLDER.getId().getPath(), () -> NopDynamicProcessor.CODEC);
+		dynamicProcessorTypes.register(SubListDynamicProcessor.HOLDER.getId().getPath(), () -> SubListDynamicProcessor.CODEC);
+		dynamicProcessorTypes.register(ProcessorListDynamicProcessor.HOLDER.getId().getPath(), () -> ProcessorListDynamicProcessor.CODEC);
 		
 		pieceFillerTypes.register(EmptyPieceFiller.HOLDER.getId().getPath(), () -> EmptyPieceFiller.CODEC);
 		pieceFillerTypes.register(FeaturePieceFiller.HOLDER.getId().getPath(), () -> FeaturePieceFiller.CODEC);
@@ -105,6 +126,7 @@ public class StructureBuddyMod
 	{
 		event.dataPackRegistry(StructureBuddyRegistries.BOX_POOL, BoxPool.DIRECT_CODEC);
 		event.dataPackRegistry(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, DynamicJigsawPool.DIRECT_CODEC);
+		event.dataPackRegistry(StructureBuddyRegistries.DYNAMIC_PROCESSOR_LIST, DynamicProcessor.DIRECT_LIST_CODEC);
 	}
 	
 }
