@@ -36,4 +36,10 @@ public interface JigsawDataReader
 		T branchData = this.getBranchData(key);
 		return branchData == null ? this.getGlobalData(key) : branchData;
 	}
+	
+	/**
+	 * {@return JigsawDataAccess containing a shallow copy of the branch data (and sharing a reference to the global data)
+	 * Mutating the global data here affects global data globally, so only provide forks to things that are definitely going into the structure}
+	 */
+	public JigsawDataAccess fork();
 }

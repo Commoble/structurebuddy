@@ -51,6 +51,7 @@ public record JigsawData(Map<JigsawDataType<?>,Object> globalData, Map<JigsawDat
 	/**
 	 * {@return JigsawData containing a shallow copy of the branch data (and sharing a reference to the global data)}
 	 */
+	@Override
 	public JigsawData fork()
 	{
 		return new JigsawData(this.globalData, new HashMap<>(this.branchData));
