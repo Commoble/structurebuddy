@@ -53,7 +53,7 @@ public record SubListDynamicProcessor(Holder<List<DynamicProcessor>> processors)
 		@Nullable StructureBlockInfo modified = processedBlockInfo;
 		for (var processor : this.processors.value())
 		{
-			modified = processor.process(level, targetPosition, referencePos, originalBlockInfo, processedBlockInfo, settings, template, jigsawData);
+			modified = processor.process(level, targetPosition, referencePos, originalBlockInfo, modified, settings, template, jigsawData);
 			if (modified == null)
 				break;
 		}

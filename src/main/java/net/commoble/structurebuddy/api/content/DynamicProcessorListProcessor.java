@@ -109,7 +109,7 @@ public class DynamicProcessorListProcessor extends StructureProcessor implements
 		@Nullable StructureBlockInfo modified = processedBlockInfo;
 		for (DynamicProcessor processor : this.processors.value())
 		{
-			modified = processor.process(level, targetPosition, referencePos, originalBlockInfo, processedBlockInfo, settings, template, this);
+			modified = processor.process(level, targetPosition, referencePos, originalBlockInfo, modified, settings, template, this);
 			if (modified == null)
 				break;
 		}

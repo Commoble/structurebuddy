@@ -57,7 +57,7 @@ public record ProcessorListDynamicProcessor(Holder<StructureProcessorList> proce
 		@Nullable StructureBlockInfo modified = processedBlockInfo;
 		for (var processor : this.processors.value().list())
 		{
-			modified = processor.process(level, targetPosition, referencePos, originalBlockInfo, processedBlockInfo, settings, template);
+			modified = processor.process(level, targetPosition, referencePos, originalBlockInfo, modified, settings, template);
 			if (modified == null)
 				break;
 		}
