@@ -114,7 +114,7 @@ public class DynamicJigsawStructurePiece extends StructurePiece implements Jigsa
         			this.boundingBox);
         		continue;
         	}
-    		tag.read(key, holder.value().codec(), ops).ifPresent(value -> jigsawData.put(holder.value(), value));
+        	jigsawDataTag.read(key, holder.value().codec(), ops).ifPresent(value -> jigsawData.put(holder.value(), value));
         }
         this.jigsawData = jigsawData;
 	}
@@ -133,7 +133,7 @@ public class DynamicJigsawStructurePiece extends StructurePiece implements Jigsa
         for (JigsawDataType<?> type : this.jigsawData.keySet())
         {
         	String id = Objects.requireNonNull(registry.getKey(type), "Unregistered JigsawDataType " + type).toString();
-        	this.writeData(context, id, type, tag);
+        	this.writeData(context, id, type, jigsawDataTag);
         }
         tag.put("jigsaw_data", jigsawDataTag);
 	}
