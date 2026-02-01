@@ -53,9 +53,9 @@ public record BoxDynamicJigsawElement(
 	/// ```
 	public static final MapCodec<BoxDynamicJigsawElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
 			BoxElement.CODEC.fieldOf("element").forGetter(BoxDynamicJigsawElement::element),
-			IntProvider.CODEC.fieldOf("x_size").forGetter(BoxDynamicJigsawElement::xSize),
-			IntProvider.CODEC.fieldOf("y_size").forGetter(BoxDynamicJigsawElement::ySize),
-			IntProvider.CODEC.fieldOf("z_size").forGetter(BoxDynamicJigsawElement::zSize)
+			IntProvider.POSITIVE_CODEC.fieldOf("x_size").forGetter(BoxDynamicJigsawElement::xSize),
+			IntProvider.POSITIVE_CODEC.fieldOf("y_size").forGetter(BoxDynamicJigsawElement::ySize),
+			IntProvider.POSITIVE_CODEC.fieldOf("z_size").forGetter(BoxDynamicJigsawElement::zSize)
 		).apply(builder, BoxDynamicJigsawElement::new));
 
 	@Override
@@ -72,9 +72,9 @@ public record BoxDynamicJigsawElement(
 			0,
 			0,
 			0,
-			this.xSize.sample(random),
-			this.ySize.sample(random),
-			this.zSize.sample(random));
+			this.xSize.sample(random)-1,
+			this.ySize.sample(random)-1,
+			this.zSize.sample(random)-1);
 		BoxResult boxResult = this.element.bake(new BoxBakeContext(
 			context.generationContext(),
 			box,
