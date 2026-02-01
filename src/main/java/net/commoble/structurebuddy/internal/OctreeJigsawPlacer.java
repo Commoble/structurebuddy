@@ -1,7 +1,6 @@
 package net.commoble.structurebuddy.internal;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.PriorityQueue;
@@ -15,6 +14,7 @@ import org.jetbrains.annotations.ApiStatus;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.commoble.structurebuddy.api.DynamicJigsawBakeContext;
 import net.commoble.structurebuddy.api.DynamicJigsawElement;
 import net.commoble.structurebuddy.api.DynamicJigsawPool;
@@ -89,7 +89,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			return Optional.empty();
 		}
 		
-		JigsawData jigsawData = new JigsawData(new HashMap<>(), new HashMap<>());
+		JigsawData jigsawData = new JigsawData(new Reference2ObjectOpenHashMap<>(), new Reference2ObjectOpenHashMap<>());
 		DynamicJigsawResult results = startElement.bake(new DynamicJigsawBakeContext(context, new SubtractiveOctree.NonEmpty(BoundingBox.infinite()), null, NO_AVAILABLE_CONNECTIONS, jigsawData, rotation, params.liquidSettings()));
 		BoundingBox startBounds = results.boundingBox(chunkCornerPos);
 		List<JigsawConnectionToChild> shuffledJigsawsConnectingToChildren = results.offsetShuffledConnectionsToChildren(chunkCornerPos);

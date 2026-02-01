@@ -1,6 +1,5 @@
 package net.commoble.structurebuddy.api.content;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -9,6 +8,8 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DynamicOps;
 
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.commoble.structurebuddy.api.DynamicJigsawElement;
 import net.commoble.structurebuddy.api.DynamicJigsawFillContext;
 import net.commoble.structurebuddy.api.JigsawDataType;
@@ -56,7 +57,7 @@ public class DynamicJigsawStructurePiece extends StructurePiece implements Jigsa
 	private final PieceFiller pieceFiller;
 	private final Rotation rotation;
 	private final LiquidSettings liquidSettings;
-	Map<JigsawDataType<?>,Object> jigsawData;
+	Reference2ObjectMap<JigsawDataType<?>,Object> jigsawData;
 
 	/**
 	 * Constructor used when creating structure pieces during jigsaw assembly
@@ -75,7 +76,7 @@ public class DynamicJigsawStructurePiece extends StructurePiece implements Jigsa
 		BoundingBox elementBox,
 		int genDepth,
 		LiquidSettings liquidSettings,
-		Map<JigsawDataType<?>,Object> jigsawData)
+		Reference2ObjectMap<JigsawDataType<?>,Object> jigsawData)
 	{
 		super(HOLDER.get(), genDepth, elementBox);
 		this.structureTemplateManager = templateManager;
@@ -98,7 +99,7 @@ public class DynamicJigsawStructurePiece extends StructurePiece implements Jigsa
 		this.pieceFiller = tag.read("piece_filler", PieceFiller.CODEC, ops).orElseThrow(() -> new IllegalStateException("Invalid piece filler"));
         this.rotation = tag.read("rotation", Rotation.CODEC).orElseThrow();
         this.liquidSettings = tag.read("liquid_settings", LiquidSettings.CODEC).orElse(JigsawStructure.DEFAULT_LIQUID_SETTINGS);
-        Map<JigsawDataType<?>, Object> jigsawData = new HashMap<>();
+        Reference2ObjectMap<JigsawDataType<?>, Object> jigsawData = new Reference2ObjectOpenHashMap<>();
         CompoundTag jigsawDataTag = tag.getCompoundOrEmpty("jigsaw_data");
         for (var key : jigsawDataTag.keySet())
         {
