@@ -31,6 +31,7 @@ public class DynamicProcessorListProcessor extends StructureProcessor implements
 {
 	/// ```json
 	/// {
+	/// 	"type": "structurebuddy": "dynamic_processor_list",
 	/// 	"processors": [
 	/// 		{
 	/// 			// dynamic processor object
@@ -145,12 +146,10 @@ public class DynamicProcessorListProcessor extends StructureProcessor implements
 		@Nullable StructureEntityInfo modifiedInfo = rawEntityInfo;
 		for (DynamicProcessor processor : this.processors.value())
 		{
-			modifiedInfo = processor.processEntity(world, seedPos, rawEntityInfo, entityInfo, placementSettings, template, this);
+			modifiedInfo = processor.processEntity(world, seedPos, rawEntityInfo, modifiedInfo, placementSettings, template, this);
 			if (modifiedInfo == null)
 				break;
 		}
 		return modifiedInfo;
 	}
-
-	
 }

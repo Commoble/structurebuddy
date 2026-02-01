@@ -6,16 +6,15 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.serialization.MapCodec;
 
-import net.commoble.structurebuddy.api.DynamicProcessor;
-import net.commoble.structurebuddy.api.JigsawPieceDataReader;
 import net.commoble.structurebuddy.api.StructureBuddy;
-import net.commoble.structurebuddy.api.StructureBuddyRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -23,24 +22,45 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureEntityInfo;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
-/// DynamicProcessor which delegates to a vanilla processor list
-/// @param processors Holder referencing a structure processor list file (data/namespace/worldgen/processor_list/path.json)
-public record ProcessorListDynamicProcessor(Holder<StructureProcessorList> processors) implements DynamicProcessor
+/// StructureProcessor which delegates to another processor list
+public class ProcessorListProcessor extends StructureProcessor
 {
-
-	/** minecraft:worldgen/structure_processor / structurebuddy:processor_list **/
-	public static final ResourceKey<MapCodec<? extends DynamicProcessor>> KEY = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_PROCESSOR_TYPE, StructureBuddy.id("processor_list"));
-	/** holder **/
-	public static final DeferredHolder<MapCodec<? extends DynamicProcessor>, MapCodec<ProcessorListDynamicProcessor>> HOLDER = DeferredHolder.create(KEY);
-	
-	public static final MapCodec<ProcessorListDynamicProcessor> CODEC = StructureProcessorType.LIST_CODEC
-		.xmap(ProcessorListDynamicProcessor::new, ProcessorListDynamicProcessor::processors)
+	/// ```json
+	/// {
+	/// 	"type": "structurebuddy:processor_list",
+	/// 	"processors": "modid:another_processor_list"
+	/// }
+	/// ```
+	public static final MapCodec<ProcessorListProcessor> CODEC = StructureProcessorType.LIST_CODEC
+		.xmap(ProcessorListProcessor::new, ProcessorListProcessor::processors)
 		.fieldOf("processors");
 	
-	@Override
-	public MapCodec<? extends DynamicProcessor> codec()
+	/** minecraft:worldgen/structure_processor / structurebuddy:processor_list **/
+	public static final ResourceKey<StructureProcessorType<?>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("processor_list"));
+	/** holder **/
+	public static final DeferredHolder<StructureProcessorType<?>,StructureProcessorType<ProcessorListProcessor>> HOLDER = DeferredHolder.create(KEY);
+		
+	private final Holder<StructureProcessorList> processors;
+	
+	/**
+	 * It's a constructor!
+	 * @param processors Holder referencing a processor_list file
+	 */
+	public ProcessorListProcessor(Holder<StructureProcessorList> processors)
 	{
-		return CODEC;
+		this.processors = processors;
+	}
+
+	/// {@return Holder referencing list of sub-processors to run}
+	public Holder<StructureProcessorList> processors()
+	{
+		return this.processors;
+	}
+	
+	@Override
+	protected StructureProcessorType<?> getType()
+	{
+		return HOLDER.get();
 	}
 
 	@Override
@@ -51,8 +71,7 @@ public record ProcessorListDynamicProcessor(Holder<StructureProcessorList> proce
 		StructureBlockInfo originalBlockInfo,
 		StructureBlockInfo processedBlockInfo,
 		StructurePlaceSettings settings,
-		@Nullable StructureTemplate template,
-		JigsawPieceDataReader jigsawData)
+		@Nullable StructureTemplate template)
 	{
 		@Nullable StructureBlockInfo modified = processedBlockInfo;
 		for (var processor : this.processors.value().list())
@@ -71,8 +90,7 @@ public record ProcessorListDynamicProcessor(Holder<StructureProcessorList> proce
 		BlockPos referencePos,
 		List<StructureBlockInfo> originalBlockInfoList,
 		List<StructureBlockInfo> processedBlockInfoList,
-		StructurePlaceSettings settings,
-		JigsawPieceDataReader jigsawData)
+		StructurePlaceSettings settings)
 	{
 		for (var processor : this.processors.value().list())
 		{
@@ -81,28 +99,23 @@ public record ProcessorListDynamicProcessor(Holder<StructureProcessorList> proce
 		return processedBlockInfoList;
 	}
 
-	// neoforge api spec is wrong, StructureProcessor#processEntity can and does accept nullable StructureTemplates
-	// and can and does return nullable entity info
-	@SuppressWarnings({ "null", "unused" })
+	@SuppressWarnings({ "null", "unused" }) // neoforge api spec is currently incorrect, processEntity can and does return null
 	@Override
 	public @Nullable StructureEntityInfo processEntity(
 		LevelReader world,
 		BlockPos seedPos,
-		StructureEntityInfo rawEntityInfo, 
+		StructureEntityInfo rawEntityInfo,
 		StructureEntityInfo entityInfo,
 		StructurePlaceSettings placementSettings,
-		@Nullable StructureTemplate template,
-		JigsawPieceDataReader jigsawData)
+		@Nullable StructureTemplate template)
 	{
-		@Nullable StructureEntityInfo modified = entityInfo;
+		@Nullable StructureEntityInfo modifiedInfo = rawEntityInfo;
 		for (var processor : this.processors.value().list())
 		{
-			modified = processor.processEntity(world, seedPos, rawEntityInfo, modified, placementSettings, template);
-			if (modified == null)
+			modifiedInfo = processor.processEntity(world, seedPos, rawEntityInfo, modifiedInfo, placementSettings, template);
+			if (modifiedInfo == null)
 				break;
 		}
-		return modified;
+		return modifiedInfo;
 	}
-
-	
 }

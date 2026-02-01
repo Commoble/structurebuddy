@@ -24,6 +24,7 @@ import net.commoble.structurebuddy.api.content.FeatureDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.FeatureDynamicJigsawElement.FeaturePieceFiller;
 import net.commoble.structurebuddy.api.content.NopDynamicProcessor;
 import net.commoble.structurebuddy.api.content.ProcessorListDynamicProcessor;
+import net.commoble.structurebuddy.api.content.ProcessorListProcessor;
 import net.commoble.structurebuddy.api.content.StructureTemplateBoxElement;
 import net.commoble.structurebuddy.api.content.StructureTemplateDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.StructureTemplatePieceFiller;
@@ -69,17 +70,21 @@ public class StructureBuddyMod
 		newRegistry(StructureBuddyRegistries.JIGSAW_DATA_TYPE);
 		DeferredRegister<MapCodec<? extends PieceFiller>> pieceFillerTypes = newRegistry(StructureBuddyRegistries.PIECE_FILLER_TYPE);
 
-		structurePieceTypes.register("dynamic_jigsaw",
+		structurePieceTypes.register(DynamicJigsawStructurePiece.HOLDER.getId().getPath(),
 			() -> DynamicJigsawStructurePiece::new);
 		
-		structureProcessorTypes.register("dynamic_processor_list_processor", () -> {
+		structureProcessorTypes.register(DynamicProcessorListProcessor.HOLDER.getId().getPath(), () -> {
 			// for whatever reason eclipse won't compile this without explicitly declaring the type
 			StructureProcessorType<DynamicProcessorListProcessor> type = () -> DynamicProcessorListProcessor.CODEC;
 			return type;
 		});
+		structureProcessorTypes.register(ProcessorListProcessor.HOLDER.getId().getPath(), () -> {
+			StructureProcessorType<ProcessorListProcessor> type = () -> ProcessorListProcessor.CODEC;
+			return type;
+		});
 		
 		structureTypes.<StructureType<DynamicJigsawStructure>>register(
-			"dynamic_jigsaw",
+			DynamicJigsawStructure.HOLDER.getId().getPath(),
 			() -> () -> DynamicJigsawStructure.CODEC);
 		
 		boxElementTypes.register(EmptyBoxElement.HOLDER.getId().getPath(), () -> EmptyBoxElement.CODEC);
