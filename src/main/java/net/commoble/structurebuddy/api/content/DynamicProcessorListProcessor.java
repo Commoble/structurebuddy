@@ -46,8 +46,8 @@ public class DynamicProcessorListProcessor extends StructureProcessor implements
 			JigsawDataType.MAP_CODEC.fieldOf("jigsaw_data").forGetter(DynamicProcessorListProcessor::jigsawData)
 		).apply(builder, DynamicProcessorListProcessor::new));
 	
-	/** minecraft:worldgen/structure_processor / structurebuddy:dynamic_processor_list_processor **/
-	public static final ResourceKey<StructureProcessorType<?>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("dynamic_processor_list_processor"));
+	/** minecraft:worldgen/structure_processor / structurebuddy:dynamic_processor_list **/
+	public static final ResourceKey<StructureProcessorType<?>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("dynamic_processor_list"));
 	/** holder **/
 	public static final DeferredHolder<StructureProcessorType<?>,StructureProcessorType<DynamicProcessorListProcessor>> HOLDER = DeferredHolder.create(KEY);
 		

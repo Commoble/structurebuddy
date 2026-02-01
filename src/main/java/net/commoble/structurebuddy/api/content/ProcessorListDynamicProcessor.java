@@ -28,8 +28,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 public record ProcessorListDynamicProcessor(Holder<StructureProcessorList> processors) implements DynamicProcessor
 {
 
-	/** minecraft:worldgen/structure_processor / structurebuddy:dynamic_structure_processor_wrapper **/
-	public static final ResourceKey<MapCodec<? extends DynamicProcessor>> KEY = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_PROCESSOR_TYPE, StructureBuddy.id("processor_list_dynamic_processor"));
+	/** minecraft:worldgen/structure_processor / structurebuddy:processor_list **/
+	public static final ResourceKey<MapCodec<? extends DynamicProcessor>> KEY = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_PROCESSOR_TYPE, StructureBuddy.id("processor_list"));
 	/** holder **/
 	public static final DeferredHolder<MapCodec<? extends DynamicProcessor>, MapCodec<ProcessorListDynamicProcessor>> HOLDER = DeferredHolder.create(KEY);
 	
