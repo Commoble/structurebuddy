@@ -32,7 +32,7 @@ public record BoxDynamicJigsawElement(
 	IntProvider zSize) implements DynamicJigsawElement
 {
 	/** structurebuddy:dynamic_pool_element_type / structurebuddy:box */
-	public static final ResourceKey<MapCodec<? extends DynamicJigsawElement>> KEY = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT_TYPE, StructureBuddy.id("empty"));
+	public static final ResourceKey<MapCodec<? extends DynamicJigsawElement>> KEY = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT_TYPE, StructureBuddy.id("box"));
 	/** holder */
 	public static final DeferredHolder<MapCodec<? extends DynamicJigsawElement>, MapCodec<EmptyDynamicJigsawElement>> HOLDER = DeferredHolder.create(KEY);
 	
