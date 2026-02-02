@@ -16,7 +16,6 @@ import net.commoble.structurebuddy.api.util.CodecBuddy;
 /// or a piece could track how many copies of itself have been generated
 /// and refuse to generate more of itself after three pieces have been selected.
 /// @param <T> Type of data to serialize
-/// @param codec Codec to serialize data with
 public final class JigsawDataType<T>
 {
 	/// Serializes a map where each key is a JigsawDataType
@@ -36,11 +35,14 @@ public final class JigsawDataType<T>
 	
 	private final Codec<T> codec;
 	
+	/// It's a constructor!
+	/// @param codec Codec to serialize data with
 	public JigsawDataType (Codec<T> codec)
 	{
 		this.codec = codec;
 	}
 	
+	///{@return the codec}
 	public Codec<T> codec()
 	{
 		return this.codec;
