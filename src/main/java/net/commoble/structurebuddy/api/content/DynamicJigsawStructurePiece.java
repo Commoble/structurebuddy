@@ -57,7 +57,7 @@ public class DynamicJigsawStructurePiece extends StructurePiece implements Jigsa
 	private final PieceFiller pieceFiller;
 	private final Rotation rotation;
 	private final LiquidSettings liquidSettings;
-	Reference2ObjectMap<JigsawDataType<?>,Object> jigsawData;
+	Map<JigsawDataType<?>,Object> jigsawData;
 
 	/**
 	 * Constructor used when creating structure pieces during jigsaw assembly
@@ -76,7 +76,7 @@ public class DynamicJigsawStructurePiece extends StructurePiece implements Jigsa
 		BoundingBox elementBox,
 		int genDepth,
 		LiquidSettings liquidSettings,
-		Reference2ObjectMap<JigsawDataType<?>,Object> jigsawData)
+		Map<JigsawDataType<?>,Object> jigsawData)
 	{
 		super(HOLDER.get(), genDepth, elementBox);
 		this.structureTemplateManager = templateManager;

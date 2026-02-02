@@ -1,8 +1,9 @@
 package net.commoble.structurebuddy.internal;
 
+import java.util.Map;
+
 import org.jetbrains.annotations.Nullable;
 
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.commoble.structurebuddy.api.JigsawDataAccess;
 import net.commoble.structurebuddy.api.JigsawDataType;
@@ -12,7 +13,7 @@ import net.commoble.structurebuddy.api.JigsawDataType;
  * @param globalData Map of data shared by an entire dynamic jigsaw structure
  * @param branchData Map of data which a given piece will make available only to its descendent pieces
  */
-public record JigsawData(Reference2ObjectMap<JigsawDataType<?>,Object> globalData, Reference2ObjectMap<JigsawDataType<?>,Object> branchData) implements JigsawDataAccess
+public record JigsawData(Map<JigsawDataType<?>,Object> globalData, Map<JigsawDataType<?>,Object> branchData) implements JigsawDataAccess
 {
 
 	@SuppressWarnings("unchecked")
@@ -60,9 +61,9 @@ public record JigsawData(Reference2ObjectMap<JigsawDataType<?>,Object> globalDat
 	 * {@return Map containing entries from both global and branch data at this time,
 	 * using branch data for JigsawDataTypes which exist in both data sets}
 	 */
-	public Reference2ObjectMap<JigsawDataType<?>, Object> toMap()
+	public Map<JigsawDataType<?>, Object> toMap()
 	{
-		Reference2ObjectMap<JigsawDataType<?>, Object> map = new Reference2ObjectOpenHashMap<>();
+		Map<JigsawDataType<?>, Object> map = new Reference2ObjectOpenHashMap<>();
 		for (var entry : this.globalData.entrySet())
 		{
 			map.put(entry.getKey(), entry.getValue());
