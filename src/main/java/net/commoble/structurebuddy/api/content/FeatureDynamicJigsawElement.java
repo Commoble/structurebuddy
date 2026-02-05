@@ -2,7 +2,6 @@ package net.commoble.structurebuddy.api.content;
 
 import java.util.List;
 
-import org.apache.commons.lang3.function.Consumers;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -22,8 +21,8 @@ import net.commoble.structurebuddy.api.StructureBuddyRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pools.FeaturePoolElement;
@@ -89,7 +88,7 @@ public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature
 			this.jigsawName);
 		// would be nice if we could configure this to generate before or after other pieces
 		// but placement priority only affects jigsaw assembling for child jigsaws, of which we have none, not adding-blocks-to-chunks
-		return new DynamicJigsawResult(data -> pieceFiller, boundingBox, List.of(jigsaw), List.of(), Consumers.nop());
+		return new DynamicJigsawResult(data -> pieceFiller, boundingBox, List.of(jigsaw), List.of(), DynamicJigsawResult.NOOP_ON_SELECTED);
 	}
 	
 	/**

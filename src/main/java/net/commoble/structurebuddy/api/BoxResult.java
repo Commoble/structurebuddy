@@ -1,12 +1,11 @@
 package net.commoble.structurebuddy.api;
 
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.apache.commons.lang3.function.Consumers;
-
 import net.commoble.structurebuddy.api.content.EmptyPieceFiller;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 /**
@@ -20,7 +19,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * box provided by the context (and elements may return {@link BoxResult#invalid} to indicate an invalid result).
  * @param connectionsToParent List of jigsaw connections to parent jigsaw pools; whether these are supported or not depends on box assembling implementation
  * @param connectionsToChildren List of jigsaw connections to child jigsaw pools; whether these are supported or not depends on box assembling implementation
- * @param onSelected Consumer to apply modifications to shared jigsaw piece data,
+ * @param onSelected BiConsumer to apply modifications to shared jigsaw piece data,
  * which will run if these results are selected to add a piece to the structure.
  */
 public record BoxResult(
@@ -28,7 +27,7 @@ public record BoxResult(
 	BoundingBox localBoundingBox,
 	List<JigsawConnectionToParent> connectionsToParent,
 	List<JigsawConnectionToChild> connectionsToChildren,
-	Consumer<JigsawDataAccess> onSelected)
+	BiConsumer<JigsawDataAccess, RandomSource> onSelected)
 {
 	/**
 	 * Creates a DynamicBoxResult indicating that nothing should be generated in the given bounds.
@@ -47,7 +46,7 @@ public record BoxResult(
 			box,
 			List.of(),
 			List.of(),
-			Consumers.nop());
+			DynamicJigsawResult.NOOP_ON_SELECTED);
 	}
 	
 	/**
@@ -66,6 +65,6 @@ public record BoxResult(
 			BoundingBox.infinite(),
 			List.of(),
 			List.of(),
-			Consumers.nop());
+			DynamicJigsawResult.NOOP_ON_SELECTED);
 	}
 }

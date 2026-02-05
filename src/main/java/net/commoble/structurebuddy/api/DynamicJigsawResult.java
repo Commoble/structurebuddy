@@ -3,10 +3,9 @@ package net.commoble.structurebuddy.api;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.apache.commons.lang3.function.Consumers;
 import org.jspecify.annotations.Nullable;
 
 import net.commoble.structurebuddy.api.content.EmptyPieceFiller;
@@ -15,6 +14,7 @@ import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity.JointType;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -52,12 +52,15 @@ public record DynamicJigsawResult(
 	BoundingBox localBoundingBox,
 	List<JigsawConnectionToParent> shuffledLocalConnectionsToParent,
 	List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren,
-	Consumer<JigsawDataAccess> onSelected)
+	BiConsumer<JigsawDataAccess, RandomSource> onSelected)
 {
+	/// BiConsumer for onSelected which does nothing
+	public static final BiConsumer<JigsawDataAccess, RandomSource> NOOP_ON_SELECTED = (_,_) -> {};
+	
 	/** {@return Empty DynamicJigsawResult indicating no piece can be created or connected} **/
 	public static DynamicJigsawResult invalid()
 	{
-		return new DynamicJigsawResult(EmptyPieceFiller::empty, BoundingBox.infinite(), List.of(), List.of(), Consumers.nop());
+		return new DynamicJigsawResult(EmptyPieceFiller::empty, BoundingBox.infinite(), List.of(), List.of(), NOOP_ON_SELECTED);
 	}
 
 	/** minecraft:empty as a child jigsaw name indicates it should not be a child, and as a target jigsaw name of a parent indicates it should not be a parent */
@@ -80,7 +83,7 @@ public record DynamicJigsawResult(
 	 */
 	public static DynamicJigsawResult withParents(Function<JigsawDataReader, PieceFiller> pieceFillerFactory, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent)
 	{
-		return withParents(pieceFillerFactory, localBoundingBox, shuffledLocalConnectionsToParent, Consumers.nop());
+		return withParents(pieceFillerFactory, localBoundingBox, shuffledLocalConnectionsToParent, NOOP_ON_SELECTED);
 	}
 	
 	/**
@@ -100,7 +103,7 @@ public record DynamicJigsawResult(
 	 * @param onSelected Consumer to apply modifications to shared jigsaw piece data,
 	 * which will run if these results are selected to add a piece to the structure.
 	 */
-	public static DynamicJigsawResult withParents(Function<JigsawDataReader, PieceFiller> pieceFillerFactory, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, Consumer<JigsawDataAccess> onSelected)
+	public static DynamicJigsawResult withParents(Function<JigsawDataReader, PieceFiller> pieceFillerFactory, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, BiConsumer<JigsawDataAccess, RandomSource> onSelected)
 	{
 		return new DynamicJigsawResult(pieceFillerFactory, localBoundingBox, shuffledLocalConnectionsToParent, List.of(), onSelected);
 	}
@@ -123,7 +126,7 @@ public record DynamicJigsawResult(
 	 */
 	public static DynamicJigsawResult withChildren(Function<JigsawDataReader, PieceFiller> pieceFillerFactory, BoundingBox localBoundingBox, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren)
 	{
-		return withChildren(pieceFillerFactory, localBoundingBox, shuffledLocalConnectionsToChildren, Consumers.nop());
+		return withChildren(pieceFillerFactory, localBoundingBox, shuffledLocalConnectionsToChildren, NOOP_ON_SELECTED);
 	}
 	
 	/**
@@ -144,7 +147,7 @@ public record DynamicJigsawResult(
 	 * @param onSelected Consumer to apply modifications to shared jigsaw piece data,
 	 * which will run if these results are selected to add a piece to the structure.
 	 */
-	public static DynamicJigsawResult withChildren(Function<JigsawDataReader, PieceFiller> pieceFillerFactory, BoundingBox localBoundingBox, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren, Consumer<JigsawDataAccess> onSelected)
+	public static DynamicJigsawResult withChildren(Function<JigsawDataReader, PieceFiller> pieceFillerFactory, BoundingBox localBoundingBox, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren, BiConsumer<JigsawDataAccess, RandomSource> onSelected)
 	{
 		return new DynamicJigsawResult(pieceFillerFactory, localBoundingBox, List.of(), shuffledLocalConnectionsToChildren, onSelected);
 	}
@@ -174,7 +177,7 @@ public record DynamicJigsawResult(
 	 */
 	public static DynamicJigsawResult withParentsAndChildren(Function<JigsawDataReader, PieceFiller> pieceFillerFactory, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren)
 	{
-		return withParentsAndChildren(pieceFillerFactory, localBoundingBox, shuffledLocalConnectionsToParent, shuffledLocalConnectionsToChildren, Consumers.nop());
+		return withParentsAndChildren(pieceFillerFactory, localBoundingBox, shuffledLocalConnectionsToParent, shuffledLocalConnectionsToChildren, NOOP_ON_SELECTED);
 	}
 	
 	/**
@@ -202,7 +205,7 @@ public record DynamicJigsawResult(
 	 * which will run if these results are selected to add a piece to the structure.
 	 * @return DynamicJigsawResult
 	 */
-	public static DynamicJigsawResult withParentsAndChildren(Function<JigsawDataReader, PieceFiller> pieceFillerFactory, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren, Consumer<JigsawDataAccess> onSelected)
+	public static DynamicJigsawResult withParentsAndChildren(Function<JigsawDataReader, PieceFiller> pieceFillerFactory, BoundingBox localBoundingBox, List<JigsawConnectionToParent> shuffledLocalConnectionsToParent, List<JigsawConnectionToChild> shuffledLocalConnectionsToChildren, BiConsumer<JigsawDataAccess, RandomSource> onSelected)
 	{
 		return new DynamicJigsawResult(pieceFillerFactory, localBoundingBox, shuffledLocalConnectionsToParent, shuffledLocalConnectionsToChildren, onSelected);
 	}

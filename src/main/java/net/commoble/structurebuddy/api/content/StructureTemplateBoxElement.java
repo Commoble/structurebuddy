@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.commons.lang3.function.Consumers;
-
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -148,6 +146,6 @@ public record StructureTemplateBoxElement(
 		}
 		
 		PieceFiller pieceFiller = new StructureTemplatePieceFiller(this.location, this.processors, this.overrideLiquidSettings);
-		return new BoxResult(data -> pieceFiller, finalBox, finalConnectionsToParent, finalConnectionsToChild, Consumers.nop());
+		return new BoxResult(data -> pieceFiller, finalBox, finalConnectionsToParent, finalConnectionsToChild, DynamicJigsawResult.NOOP_ON_SELECTED);
 	}
 }

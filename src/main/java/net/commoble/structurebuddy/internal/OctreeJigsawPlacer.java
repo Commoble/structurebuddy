@@ -32,7 +32,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Holder.Reference;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -94,7 +93,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 		BoundingBox startBounds = results.boundingBox(chunkCornerPos);
 		List<JigsawConnectionToChild> shuffledJigsawsConnectingToChildren = results.offsetShuffledConnectionsToChildren(chunkCornerPos);
 
-		results.onSelected().accept(jigsawData);
+		results.onSelected().accept(jigsawData, rand);
 		PieceFiller pieceFiller = results.pieceFillerFactory().apply(jigsawData);
 		
 		DynamicJigsawStructurePiece startPiece = new DynamicJigsawStructurePiece(
@@ -190,21 +189,12 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			}
 			Reference<DynamicJigsawPool> poolHolder = maybePool.get();
 			DynamicJigsawPool pool = poolHolder.value();
-			Holder<DynamicJigsawPool> fallbackPoolHolder = pool.fallback().orElseGet(() -> context.registryAccess().lookupOrThrow(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL).getOrThrow(DynamicJigsawPool.EMPTY));
-			ResourceKey<DynamicJigsawPool> fallbackPoolKey = fallbackPoolHolder.unwrapKey().get(); 
-			Identifier fallbackId = fallbackPoolKey.identifier();
-			if (!isValidPool(fallbackPoolKey).test(fallbackPoolHolder))
-			{
-				LOGGER.warn("Empty or non-existent fallback pool: {}", fallbackId);
-				continue;
-			}
-			DynamicJigsawPool fallbackPool = fallbackPoolHolder.value();
 			List<DynamicJigsawElement> elements = new ArrayList<>();
 			if (state.depth() != this.maxDepth)
 			{
 				elements.addAll(pool.getShuffledElements(this.random));
 			}
-			elements.addAll(fallbackPool.getShuffledElements(this.random));
+			elements.addAll(pool.getShuffledFallbacks(this.random));
 			for (DynamicJigsawElement childElement : elements)
 			{
 				if (childElement == EmptyDynamicJigsawElement.INSTANCE)
@@ -252,7 +242,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 							{
 								permittedSpace.subtract(childBounds);
 								int nextDepth = state.depth() + 1;
-								childResults.onSelected().accept(childData);
+								childResults.onSelected().accept(childData, this.random);
 								PieceFiller childPieceFiller = childResults.pieceFillerFactory().apply(childData);
 								DynamicJigsawStructurePiece childPiece = new DynamicJigsawStructurePiece(this.structureTemplateManager, childPieceFiller, childRotation, childBounds, nextDepth, liquidSettings, childData.toMap());
 								this.pieces.add(childPiece);
