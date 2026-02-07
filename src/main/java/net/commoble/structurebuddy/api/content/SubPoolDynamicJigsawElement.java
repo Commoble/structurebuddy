@@ -47,7 +47,8 @@ public record SubPoolDynamicJigsawElement(Holder<DynamicJigsawPool> value) imple
 	{
 		return this.value
 			.value()
-			.elements()
+			.combinedElements()
+			.get()
 			.getRandom(context.generationContext().random())
 			.map(element -> element.bake(context))
 			.orElse(DynamicJigsawResult.invalid());

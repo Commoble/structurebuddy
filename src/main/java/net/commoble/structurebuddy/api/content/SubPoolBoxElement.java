@@ -53,7 +53,7 @@ public record SubPoolBoxElement(Holder<BoxPool> value, boolean expand) implement
 	{
 		if (this.expand)
 		{
-			for (BoxElement element : RandomBuddy.shuffleWeightedList(this.value.value().elements(), context.generationContext().random()))
+			for (BoxElement element : RandomBuddy.shuffleWeightedList(this.value.value().combinedElements().get(), context.generationContext().random()))
 			{
 				BoxResult result = element.bake(context);
 				BoundingBox childBox = result.localBoundingBox();
@@ -67,7 +67,8 @@ public record SubPoolBoxElement(Holder<BoxPool> value, boolean expand) implement
 		else {
 			return this.value
 				.value()
-				.elements()
+				.combinedElements()
+				.get()
 				.getRandom(context.generationContext().random())
 				.map(element -> element.bake(context))
 				.orElse(BoxResult.invalid());

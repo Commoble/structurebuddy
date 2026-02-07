@@ -82,7 +82,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 		Rotation rotation = Rotation.getRandom(rand);
 		var startPoolHolder = params.startPool();
 		DynamicJigsawPool startPool = startPoolHolder.value();
-		DynamicJigsawElement startElement = startPool.elements().getRandomOrThrow(rand);
+		DynamicJigsawElement startElement = startPool.combinedElements().get().getRandomOrThrow(rand);
 		if (startElement == EmptyDynamicJigsawElement.INSTANCE)
 		{
 			return Optional.empty();
@@ -152,9 +152,10 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 		}));
 	}
 	
+	@SuppressWarnings("deprecation")
 	private static Predicate<Holder<DynamicJigsawPool>> isValidPool(ResourceKey<DynamicJigsawPool> location)
 	{
-		return pool -> !pool.value().elements().isEmpty() || location == DynamicJigsawPool.EMPTY;
+		return pool -> (!pool.value().elements().isEmpty()) || (!pool.value().delegates().isEmpty()) || location == DynamicJigsawPool.EMPTY;
 	}
 	
 	private int tryPlacingChildren(GenerationContext context, OctreePieceState state, LiquidSettings liquidSettings, int placementCounter)

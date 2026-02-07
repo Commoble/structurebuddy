@@ -2,9 +2,15 @@ package net.commoble.structurebuddy.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
+import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -27,18 +33,50 @@ import net.minecraft.util.random.WeightedList;
  * Due to the api differences involved, they are not compatible with template pool files,
  * however they do support structure templates (nbt structures), see {@link StructureTemplateDynamicJigsawElement}.
  * @param fallback Optional alternate pool to use at the final jigsaw depth or if all elements of this pool fail to generate
- * @param elements WeightedList of DynamicJigsawElements
+ * @param elements WeightedList of DynamicJigsawElements. Use {@link DynamicJigsawPool#combinedElements} to get combined primary and delegate elements.
  * @param delegates WeightedList of sub-pools to pull elements from. Weights of pools and sub-elements are multiplied together.
  * @param keepDelegateFallbacks boolean indicating whether to include fallbacks from delegates, if any
+ * @param combinedElements memoized WeightedList of all elements both from this pool's primary elements and each of its delegates
+ * @param combinedFallbacks memoized WeightedList of fallback elements (including from delegates if requested by keepDelegateFallbacks)
  */
 public record DynamicJigsawPool(
 	Optional<Holder<DynamicJigsawPool>> fallback,
 	WeightedList<DynamicJigsawElement> elements,
 	WeightedList<Holder<DynamicJigsawPool>> delegates,
-	boolean keepDelegateFallbacks)
+	boolean keepDelegateFallbacks,
+	Supplier<WeightedList<DynamicJigsawElement>> combinedElements,
+	Supplier<WeightedList<DynamicJigsawElement>> combinedFallbacks)
 {
 	/** structurebuddy:dynamic_jigsaw_pool / structurebuddy:empty - special pool provided by StructureBuddy which has no elements. This should be used instead of making an empty pool yourself  */
 	public static final ResourceKey<DynamicJigsawPool> EMPTY = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, StructureBuddy.id("empty"));
+	
+	/**
+	 * Constructs a BoxPool from data available in json
+	 * @param fallback Optional alternate pool to use at the final jigsaw depth or if all elements of this pool fail to generate
+	 * @param elements WeightedList of DynamicJigsawElements. Use {@link DynamicJigsawPool#combinedElements} to get combined primary and delegate elements.
+	 * @param delegates WeightedList of sub-pools to pull elements from. Weights of pools and sub-elements are multiplied together.
+	 * @param keepDelegateFallbacks boolean indicating whether to include fallbacks from delegates, if any
+	 */
+	public DynamicJigsawPool(
+		Optional<Holder<DynamicJigsawPool>> fallback,
+		WeightedList<DynamicJigsawElement> elements,
+		WeightedList<Holder<DynamicJigsawPool>> delegates,
+		boolean keepDelegateFallbacks)
+	{
+		this(fallback, elements, delegates, keepDelegateFallbacks,
+			Suppliers.memoize(() -> combineElements(elements, delegates, new HashSet<>())),
+			Suppliers.memoize(() -> combineFallbacks(fallback, delegates, keepDelegateFallbacks, new HashSet<>())));
+	}
+	
+	/**
+	 * {@return WeightedList of DynamicJigsawElements}
+	 * @deprecated Use {@link DynamicJigsawPool#combinedElements()} to get combined primary and delegate elements
+	 */
+	@Deprecated
+	public WeightedList<DynamicJigsawElement> elements()
+	{
+		return this.elements;
+	}
 	
 	/**
 	 * e.g.
@@ -67,45 +105,71 @@ public record DynamicJigsawPool(
 	public static final Codec<Holder<DynamicJigsawPool>> CODEC = RegistryFileCodec.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, DIRECT_CODEC);
 
 	/**
-	 * {@return WeightedList of all DynamicJigsawElements in this pool including from delegates, if any}
+	 * {@return WeightedList of all DynamicJigsawElements combined from primary elements and delegate pools}
+	 * @param elements WeightedList of DynamicJigsawElements.
+	 * @param delegates WeightedList of sub-pools to pull elements from. Weights of pools and sub-elements are multiplied together.
+	 * @param seenPools Set of pool keys already seen, to avoid duplicates and circular references
 	 */
-	public List<Weighted<DynamicJigsawElement>> getElements()
+	public static WeightedList<DynamicJigsawElement> combineElements(WeightedList<DynamicJigsawElement> elements, WeightedList<Holder<DynamicJigsawPool>> delegates, Set<ResourceKey<DynamicJigsawPool>> seenPools)
 	{
-
 		List<Weighted<DynamicJigsawElement>> list = new ArrayList<>();
-		list.addAll(this.elements.unwrap());
-		for (var poolHolder : this.delegates.unwrap())
+		list.addAll(elements.unwrap());
+		for (Weighted<Holder<DynamicJigsawPool>> weighted : delegates.unwrap())
 		{
-			int baseWeight = poolHolder.weight();
-			for (var subElement : poolHolder.value().value().getElements())
+			Holder<DynamicJigsawPool> holder = weighted.value();
+			@Nullable ResourceKey<DynamicJigsawPool> key = holder.unwrapKey().orElse(null);
+			if (key != null)
+			{
+				if (seenPools.contains(key))
+				{
+					continue; // don't add again
+				}
+				seenPools.add(key);
+			}
+			int baseWeight = weighted.weight();
+			for (Weighted<DynamicJigsawElement> subElement : holder.value().combinedElements().get().unwrap())
 			{
 				list.add(new Weighted<>(subElement.value(), subElement.weight() * baseWeight));
 			}
 		}
-		return list;
+		return WeightedList.of(list);
 	}
 	
 	/**
 	 * {@return WeightedList of fallback elements (including from delegates if this.keepDelegateFallbacks is true)}
+	 * @param fallback Optional alternate pool to use at the final jigsaw depth or if all elements of this pool fail to generate
+	 * @param delegates WeightedList of sub-pools to pull elements from. Weights of pools and sub-elements are multiplied together.
+	 * @param keepDelegateFallbacks boolean indicating whether to include fallbacks from delegates, if any
+	 * @param seenPools Set of pool ids already seen, to avoiod duplicates and circular references
 	 */
-	public List<Weighted<DynamicJigsawElement>> getFallbacks()
+	public static WeightedList<DynamicJigsawElement> combineFallbacks(Optional<Holder<DynamicJigsawPool>> fallback, WeightedList<Holder<DynamicJigsawPool>> delegates, boolean keepDelegateFallbacks, Set<ResourceKey<DynamicJigsawPool>> seenPools)
 	{
 		List<Weighted<DynamicJigsawElement>> list = new ArrayList<>();
-		this.fallback.ifPresent(holder -> {
-			list.addAll(holder.value().getElements());
+		fallback.ifPresent(holder -> {
+			list.addAll(holder.value().combinedElements().get().unwrap());
 		});
-		if (this.keepDelegateFallbacks)
+		if (keepDelegateFallbacks)
 		{
-			for (var poolHolder : this.delegates.unwrap())
+			for (var weighted : delegates.unwrap())
 			{
-				int baseWeight = poolHolder.weight();
-				for (var subElement : poolHolder.value().value().getFallbacks())
+				Holder<DynamicJigsawPool> holder = weighted.value();
+				@Nullable ResourceKey<DynamicJigsawPool> key = holder.unwrapKey().orElse(null);
+				if (key != null)
+				{
+					if (seenPools.contains(key))
+					{
+						continue; // don't add again
+					}
+					seenPools.add(key);
+				}
+				int baseWeight = weighted.weight();
+				for (var subElement : holder.value().combinedFallbacks().get().unwrap())
 				{
 					list.add(new Weighted<>(subElement.value(), subElement.weight() * baseWeight));
 				}
 			}
 		}
-		return list;
+		return WeightedList.of(list);
 	}
 	
 	/**
@@ -114,7 +178,7 @@ public record DynamicJigsawPool(
 	 */
 	public Collection<? extends DynamicJigsawElement> getShuffledFallbacks(RandomSource random)
 	{
-		return RandomBuddy.shuffleWeightedList(WeightedList.of(this.getFallbacks()), random);
+		return RandomBuddy.shuffleWeightedList(this.combinedFallbacks().get(), random);
 	}
 	
 	/**
@@ -123,6 +187,6 @@ public record DynamicJigsawPool(
 	 */
 	public Collection<? extends DynamicJigsawElement> getShuffledElements(RandomSource random)
 	{
-		return RandomBuddy.shuffleWeightedList(WeightedList.of(this.getElements()), random);
+		return RandomBuddy.shuffleWeightedList(this.combinedElements().get(), random);
 	}
 }
