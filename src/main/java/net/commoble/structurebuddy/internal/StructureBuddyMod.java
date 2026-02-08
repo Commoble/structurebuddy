@@ -30,8 +30,6 @@ import net.commoble.structurebuddy.api.content.StructureTemplateBoxElement;
 import net.commoble.structurebuddy.api.content.StructureTemplateDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.StructureTemplatePieceFiller;
 import net.commoble.structurebuddy.api.content.SubListDynamicProcessor;
-import net.commoble.structurebuddy.api.content.SubPoolBoxElement;
-import net.commoble.structurebuddy.api.content.SubPoolDynamicJigsawElement;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -90,13 +88,11 @@ public class StructureBuddyMod
 		
 		boxElementTypes.register(EmptyBoxElement.HOLDER.getId().getPath(), () -> EmptyBoxElement.CODEC);
 		boxElementTypes.register(StructureTemplateBoxElement.HOLDER.getId().getPath(), () -> StructureTemplateBoxElement.CODEC);
-		boxElementTypes.register(SubPoolBoxElement.HOLDER.getId().getPath(), () -> SubPoolBoxElement.CODEC);
 		
 		dynamicJigsawElementTypes.register(EmptyDynamicJigsawElement.HOLDER.getId().getPath(), () -> EmptyDynamicJigsawElement.CODEC);
 		dynamicJigsawElementTypes.register(BoxDynamicJigsawElement.HOLDER.getId().getPath(), () -> BoxDynamicJigsawElement.CODEC);
 		dynamicJigsawElementTypes.register(FeatureDynamicJigsawElement.HOLDER.getId().getPath(), () -> FeatureDynamicJigsawElement.CODEC);
 		dynamicJigsawElementTypes.register(StructureTemplateDynamicJigsawElement.HOLDER.getId().getPath(), () -> StructureTemplateDynamicJigsawElement.CODEC);
-		dynamicJigsawElementTypes.register(SubPoolDynamicJigsawElement.HOLDER.getId().getPath(), () -> SubPoolDynamicJigsawElement.CODEC);
 		
 		dynamicProcessorTypes.register(NopDynamicProcessor.HOLDER.getId().getPath(), () -> NopDynamicProcessor.CODEC);
 		dynamicProcessorTypes.register(SubListDynamicProcessor.HOLDER.getId().getPath(), () -> SubListDynamicProcessor.CODEC);

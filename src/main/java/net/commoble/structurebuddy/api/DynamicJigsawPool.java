@@ -69,6 +69,16 @@ public record DynamicJigsawPool(
 	}
 	
 	/**
+	 * {@return fallback pool}
+	 * @deprecated use {@link DynamicJigsawPool#combinedFallbacks} to get all fallbacks including from delegates if permitted
+	 */
+	@Deprecated
+	public Optional<Holder<DynamicJigsawPool>> fallback()
+	{
+		return this.fallback;
+	}
+	
+	/**
 	 * {@return WeightedList of DynamicJigsawElements}
 	 * @deprecated Use {@link DynamicJigsawPool#combinedElements()} to get combined primary and delegate elements
 	 */

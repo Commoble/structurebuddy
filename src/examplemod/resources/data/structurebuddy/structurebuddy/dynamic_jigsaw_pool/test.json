@@ -1,5 +1,11 @@
 {
 	"fallback": "structurebuddy:empty",
+	"delegates": [
+		{
+			"weight": 1,
+			"data": "structurebuddy:stairs"
+		}
+	],
 	"elements": [
 		{
 			"data": {
@@ -10,13 +16,6 @@
 				"target_jigsaw_name": "structurebuddy:joint"
 			},
 			"weight": 5
-		},
-		{
-			"data": {
-				"type": "structurebuddy:subpool",
-				"value": "structurebuddy:stairs"
-			},
-			"weight": 1
 		}
 	]
 }
