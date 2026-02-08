@@ -1,0 +1,12 @@
+{
+	"fallback": "structurebuddy:fallback_test_collision_fallback",
+	"elements": [
+		{
+			"data": {
+				"type": "structurebuddy:structure_template",
+				"location": "structurebuddy:fallback_test_collision"
+			},
+			"weight": 1
+		}
+	]
+}

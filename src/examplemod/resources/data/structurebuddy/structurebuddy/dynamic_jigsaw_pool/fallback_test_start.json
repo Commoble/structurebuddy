@@ -1,0 +1,11 @@
+{
+	"elements": [
+		{
+			"data": {
+				"type": "structurebuddy:structure_template",
+				"location": "structurebuddy:fallback_test_start"
+			},
+			"weight": 1
+		}
+	]
+}

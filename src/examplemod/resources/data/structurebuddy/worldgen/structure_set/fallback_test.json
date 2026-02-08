@@ -1,0 +1,14 @@
+{
+	"placement": {
+		"type": "minecraft:random_spread",
+		"salt": 7654321,
+		"separation": 4,
+		"spacing": 8
+	},
+	"structures": [
+		{
+			"structure": "structurebuddy:fallback_test",
+			"weight": 1 
+		}
+	]
+}
