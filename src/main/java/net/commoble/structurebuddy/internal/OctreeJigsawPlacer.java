@@ -82,7 +82,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 		Rotation rotation = Rotation.getRandom(rand);
 		var startPoolHolder = params.startPool();
 		DynamicJigsawPool startPool = startPoolHolder.value();
-		DynamicJigsawElement startElement = startPool.combinedElements().get().getRandomOrThrow(rand);
+		DynamicJigsawElement startElement = startPool.combinedElements().get().getRandomOrThrow(rand).value();
 		if (startElement == EmptyDynamicJigsawElement.INSTANCE)
 		{
 			return Optional.empty();
@@ -190,14 +190,15 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			}
 			Reference<DynamicJigsawPool> poolHolder = maybePool.get();
 			DynamicJigsawPool pool = poolHolder.value();
-			List<DynamicJigsawElement> elements = new ArrayList<>();
+			List<Holder<DynamicJigsawElement>> elements = new ArrayList<>();
 			if (state.depth() != this.maxDepth)
 			{
 				elements.addAll(pool.getShuffledElements(this.random));
 			}
 			elements.addAll(pool.getShuffledFallbacks(this.random));
-			for (DynamicJigsawElement childElement : elements)
+			for (Holder<DynamicJigsawElement> childElementHolder : elements)
 			{
+				DynamicJigsawElement childElement = childElementHolder.value();
 				if (childElement == EmptyDynamicJigsawElement.INSTANCE)
 				{
 					break;

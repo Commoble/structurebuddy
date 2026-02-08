@@ -52,7 +52,7 @@ public record BoxDynamicJigsawElement(
 	/// }
 	/// ```
 	public static final MapCodec<BoxDynamicJigsawElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-			BoxElement.CODEC.fieldOf("element").forGetter(BoxDynamicJigsawElement::element),
+			BoxElement.DIRECT_CODEC.fieldOf("element").forGetter(BoxDynamicJigsawElement::element),
 			IntProvider.POSITIVE_CODEC.fieldOf("x_size").forGetter(BoxDynamicJigsawElement::xSize),
 			IntProvider.POSITIVE_CODEC.fieldOf("y_size").forGetter(BoxDynamicJigsawElement::ySize),
 			IntProvider.POSITIVE_CODEC.fieldOf("z_size").forGetter(BoxDynamicJigsawElement::zSize)

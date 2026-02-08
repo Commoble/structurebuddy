@@ -27,8 +27,12 @@ public final class StructureBuddyRegistries
 	public static final ResourceKey<Registry<JigsawDataType<?>>> JIGSAW_DATA_TYPE = ResourceKey.createRegistryKey(StructureBuddy.id("jigsaw_data_type"));
 	
 	// datapack registries
+	/** structurebuddy:box_element - DatapackRegistry for box element files which should be placed under data/yourmodid/structurebuddy/box_element/yourfile.json */
+	public static final ResourceKey<Registry<BoxElement>> BOX_ELEMENT = ResourceKey.createRegistryKey(StructureBuddy.id("box_element"));
 	/** structurebuddy:box_pool - Datapack Registry for box pool files which should be placed under data/yourmodid/structurebuddy/box_pool/yourfile.json */
 	public static final ResourceKey<Registry<BoxPool>> BOX_POOL = ResourceKey.createRegistryKey(StructureBuddy.id("box_pool"));
+	/** structurebuddy:dynamic_jigsaw_element - Datapack Registry for dynamic jigsaw element files which should be placed under data/yourmodid/structurebuddy/dynamic_jigsaw_element/yourfile.json */
+	public static final ResourceKey<Registry<DynamicJigsawElement>> DYNAMIC_JIGSAW_ELEMENT = ResourceKey.createRegistryKey(StructureBuddy.id("dynamic_jigsaw_element"));
 	/** structurebuddy:dynamic_jigsaw_pool - Datapack Registry for dynamic jigsaw pool files which should be placed under data/yourmodid/structurebuddy/dynamic_jigsaw_pool/yourfile.json */
 	public static final ResourceKey<Registry<DynamicJigsawPool>> DYNAMIC_JIGSAW_POOL = ResourceKey.createRegistryKey(StructureBuddy.id("dynamic_jigsaw_pool"));
 	/** structurebuddy:dynamic_processor_list - Datapack Registry for lists of dynamic structure processors which should be placed under data/yourmodid/structurebuddy/dynamic_processor_list/yourfile.json */

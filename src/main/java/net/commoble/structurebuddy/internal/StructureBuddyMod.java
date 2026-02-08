@@ -1,5 +1,9 @@
 package net.commoble.structurebuddy.internal;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.SequencedSet;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.jetbrains.annotations.ApiStatus;
@@ -30,15 +34,23 @@ import net.commoble.structurebuddy.api.content.StructureTemplateBoxElement;
 import net.commoble.structurebuddy.api.content.StructureTemplateDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.StructureTemplatePieceFiller;
 import net.commoble.structurebuddy.api.content.SubListDynamicProcessor;
+import net.minecraft.Optionull;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.random.Weighted;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -56,6 +68,7 @@ public class StructureBuddyMod
 	public StructureBuddyMod()
 	{
 		IEventBus modBus = ModList.get().getModContainerById(StructureBuddy.MODID).get().getEventBus();
+		IEventBus forgeBus = NeoForge.EVENT_BUS;
 		
 		// vanilla registries
 		DeferredRegister<StructurePieceType> structurePieceTypes = defreg(Registries.STRUCTURE_PIECE);
@@ -103,6 +116,8 @@ public class StructureBuddyMod
 		pieceFillerTypes.register(StructureTemplatePieceFiller.PIECE_FILLER_HOLDER.getId().getPath(), () -> StructureTemplatePieceFiller.CODEC);
 		
 		modBus.addListener(this::onRegisterDatapackRegistries);
+		
+		forgeBus.addListener(this::onServerAboutToStart);
 	}
 	
 	private static <T> DeferredRegister<T> defreg(ResourceKey<Registry<T>> registryKey)
@@ -127,9 +142,67 @@ public class StructureBuddyMod
 	
 	private void onRegisterDatapackRegistries(DataPackRegistryEvent.NewRegistry event)
 	{
+		event.dataPackRegistry(StructureBuddyRegistries.BOX_ELEMENT, BoxElement.DIRECT_CODEC);
 		event.dataPackRegistry(StructureBuddyRegistries.BOX_POOL, BoxPool.DIRECT_CODEC);
+		event.dataPackRegistry(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT, DynamicJigsawElement.DIRECT_CODEC);
 		event.dataPackRegistry(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, DynamicJigsawPool.DIRECT_CODEC);
 		event.dataPackRegistry(StructureBuddyRegistries.DYNAMIC_PROCESSOR_LIST, DynamicProcessor.DIRECT_LIST_CODEC);
 	}
 	
+	private void onServerAboutToStart(ServerAboutToStartEvent event)
+	{
+		RegistryAccess registries = event.getServer().registryAccess();
+		// check pools for circular references
+		Set<Holder<DynamicJigsawPool>> knownGoodJigsawPools = new HashSet<>();
+		for (Holder<DynamicJigsawPool> holder : registries.lookupOrThrow(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL).asHolderIdMap())
+		{
+			validatePool(holder, knownGoodJigsawPools, new LinkedHashSet<>(), "structurebuddy/dynamic_jigsaw_pool", DynamicJigsawPool::delegates);
+		}
+		
+		Set<Holder<BoxPool>> knownGoodBoxPools = new HashSet<>();
+		for (Holder<BoxPool> holder : registries.lookupOrThrow(StructureBuddyRegistries.BOX_POOL).asHolderIdMap())
+		{
+			validatePool(holder, knownGoodBoxPools, new LinkedHashSet<>(), "structurebuddy/box_pool", BoxPool::delegates);
+		}
+	}
+	
+	private static <T> void validatePool(Holder<T> holder, Set<Holder<T>> knownGoodPools, SequencedSet<Holder<T>> ancestralPools, String poolTypeName, Function<T, WeightedList<HolderSet<T>>> delegateLookup)
+	{
+		if (knownGoodPools.contains(holder))
+		{
+			return;
+		}
+		
+		if (ancestralPools.contains(holder))
+		{
+			StringBuilder stringBuilder = new StringBuilder();
+			stringBuilder.append(String.format("Circular reference found in registry %s:\n", poolTypeName));
+			for (var parentHolder : ancestralPools)
+			{
+				stringBuilder.append(String.format(
+					"* %s delegates to\n",
+					Optionull.mapOrDefault(
+						parentHolder.getKey(),
+						key -> key.identifier().toString(),
+						parentHolder.toString())));
+			}
+			stringBuilder.append(String.format(
+				"* %s",
+				Optionull.mapOrDefault(holder.getKey(), key -> key.identifier().toString(), holder.toString())));
+			throw new IllegalStateException(stringBuilder.toString());
+		}
+		
+		SequencedSet<Holder<T>> nextSet = new LinkedHashSet<>(ancestralPools);
+		nextSet.add(holder);
+
+		for (Weighted<HolderSet<T>> weightedHolderSet : delegateLookup.apply(holder.value()).unwrap())
+		{
+			for (Holder<T> childHolder : weightedHolderSet.value())
+			{
+				validatePool(childHolder, knownGoodPools, nextSet, poolTypeName, delegateLookup);
+			}
+		}
+		
+		knownGoodPools.add(holder);
+	}
 }

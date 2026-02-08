@@ -4,6 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 
 import net.commoble.structurebuddy.api.util.CodecBuddy;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.resources.HolderSetCodec;
+import net.minecraft.resources.RegistryFileCodec;
 
 /**
  * Elements of {@link DynamicJigsawPool} files.
@@ -20,7 +24,13 @@ public interface DynamicJigsawElement
 	}
 	</pre>
 	 */
-	public static final Codec<DynamicJigsawElement> CODEC = CodecBuddy.dispatch(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT_TYPE, DynamicJigsawElement::codec);
+	public static final Codec<DynamicJigsawElement> DIRECT_CODEC = CodecBuddy.dispatch(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT_TYPE, DynamicJigsawElement::codec);
+	
+	/** Codec to load DynamicJigsawElement holders by id, for use in other datapack registry files **/
+	public static final Codec<Holder<DynamicJigsawElement>> CODEC = RegistryFileCodec.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT, DIRECT_CODEC);
+	
+	/** HolderSet Codec for DynamicJigsawElements **/
+	public static final Codec<HolderSet<DynamicJigsawElement>> HOLDERSET_CODEC = HolderSetCodec.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT, CODEC, false);
 	
 	/**
 	 * {@return MapCodec for this type of DynamicJigsawElement, which has been registered to {@link StructureBuddyRegistries#DYNAMIC_JIGSAW_ELEMENT_TYPE}} 

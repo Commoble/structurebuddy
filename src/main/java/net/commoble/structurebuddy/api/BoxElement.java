@@ -4,6 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 
 import net.commoble.structurebuddy.api.util.CodecBuddy;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.resources.HolderSetCodec;
+import net.minecraft.resources.RegistryFileCodec;
 
 /**
  * Elements of {@link BoxPool} files.
@@ -20,7 +24,13 @@ public interface BoxElement
 	}
 	</pre>
 	 */
-	public static final Codec<BoxElement> CODEC = CodecBuddy.dispatch(StructureBuddyRegistries.BOX_ELEMENT_TYPE, BoxElement::codec);
+	public static final Codec<BoxElement> DIRECT_CODEC = CodecBuddy.dispatch(StructureBuddyRegistries.BOX_ELEMENT_TYPE, BoxElement::codec);
+	
+	/// Holder codec suitable for use in other datapack registry files
+	public static final Codec<Holder<BoxElement>> CODEC = RegistryFileCodec.create(StructureBuddyRegistries.BOX_ELEMENT, DIRECT_CODEC);
+	
+	/// Holderset codec for BoxElements
+	public static final Codec<HolderSet<BoxElement>> HOLDERSET_CODEC = HolderSetCodec.create(StructureBuddyRegistries.BOX_ELEMENT, CODEC, false);
 	
 	/** {@return MapCodec for this type of BoxElement} */
 	public abstract MapCodec<? extends BoxElement> codec();
