@@ -14,6 +14,7 @@ import net.commoble.structurebuddy.api.DynamicJigsawResult;
 import net.commoble.structurebuddy.api.StructureBuddy;
 import net.commoble.structurebuddy.api.StructureBuddyRegistries;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -26,7 +27,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 /// @param ySize IntProvider to generate the height of the box
 /// @param zSize IntProvider to generate the length of the box
 public record BoxDynamicJigsawElement(
-	BoxElement element,
+	Holder<BoxElement> element,
 	IntProvider xSize,
 	IntProvider ySize,
 	IntProvider zSize) implements DynamicJigsawElement
@@ -52,7 +53,7 @@ public record BoxDynamicJigsawElement(
 	/// }
 	/// ```
 	public static final MapCodec<BoxDynamicJigsawElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-			BoxElement.DIRECT_CODEC.fieldOf("element").forGetter(BoxDynamicJigsawElement::element),
+			BoxElement.CODEC.fieldOf("element").forGetter(BoxDynamicJigsawElement::element),
 			IntProvider.POSITIVE_CODEC.fieldOf("x_size").forGetter(BoxDynamicJigsawElement::xSize),
 			IntProvider.POSITIVE_CODEC.fieldOf("y_size").forGetter(BoxDynamicJigsawElement::ySize),
 			IntProvider.POSITIVE_CODEC.fieldOf("z_size").forGetter(BoxDynamicJigsawElement::zSize)
@@ -75,7 +76,7 @@ public record BoxDynamicJigsawElement(
 			this.xSize.sample(random)-1,
 			this.ySize.sample(random)-1,
 			this.zSize.sample(random)-1);
-		BoxResult boxResult = this.element.bake(new BoxBakeContext(
+		BoxResult boxResult = this.element.value().bake(new BoxBakeContext(
 			context.generationContext(),
 			box,
 			EnumSet.allOf(Direction.class),
