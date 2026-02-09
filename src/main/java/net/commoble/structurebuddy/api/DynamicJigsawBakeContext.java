@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.Structure.GenerationContext;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
@@ -21,8 +22,11 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSetting
  * as this is done by the jigsaw assembler anyway;
  * the purpose of this is more for shaping dynamic pieces into the available space
  * @param parent Jigsaw information of the parent jigsaw (including pos and orientation). Absolute world coordinates.
- * Will be null if this is the start piece, may be null if the parent provides a maxPieceBox.
+ * Will be null if this is the start piece
  * (the connection of the parent points to this jigsaw piece, which is the child)
+ * @param structureOrigin BlockPos at the origin of the structure as a whole.
+ * For the starting piece, this will be slightly different (but pretty close)
+ * as the start piece must be generated first in order to calculate the true structure origin.
  * @param remainingConnections Jigsaw connections which are yet to be processed.
  * Interior connections are ignored,
  * and list will be empty if this piece is an interior piece.
@@ -36,6 +40,7 @@ public record DynamicJigsawBakeContext(
 	GenerationContext generationContext,
 	AvailableSpace remainingSpace,
 	@Nullable JigsawConnectionToChild parent,
+	BlockPos structureOrigin,
 	Supplier<List<JigsawConnectionToChild>> remainingConnections,
 	JigsawDataReader data,
 	Rotation rotation,

@@ -88,8 +88,19 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			return Optional.empty();
 		}
 		
+		int chunkCornerX = chunkCornerPos.getX();
+		int chunkCornerY = chunkCornerPos.getY();
+		int chunkCornerZ = chunkCornerPos.getZ();
+		int estimatedStartHeight = params.projectStartToHeightmap()
+			.map(heightmap -> chunkCornerY + chunkGenerator.getFirstFreeHeight(chunkCornerX, chunkCornerZ, heightmap, heightAccessor, context.randomState()))
+			.orElse(chunkCornerY);
+		BlockPos estimatedStructureOrigin = new BlockPos(
+			chunkCornerX,
+			estimatedStartHeight,
+			chunkCornerZ);
+		
 		JigsawData jigsawData = new JigsawData(new Reference2ObjectOpenHashMap<>(), new Reference2ObjectOpenHashMap<>());
-		DynamicJigsawResult results = startElement.bake(new DynamicJigsawBakeContext(context, new SubtractiveOctree.NonEmpty(BoundingBox.infinite()), null, NO_AVAILABLE_CONNECTIONS, jigsawData, rotation, params.liquidSettings()));
+		DynamicJigsawResult results = startElement.bake(new DynamicJigsawBakeContext(context, new SubtractiveOctree.NonEmpty(BoundingBox.infinite()), null, estimatedStructureOrigin, NO_AVAILABLE_CONNECTIONS, jigsawData, rotation, params.liquidSettings()));
 		BoundingBox startBounds = results.boundingBox(chunkCornerPos);
 		List<JigsawConnectionToChild> shuffledJigsawsConnectingToChildren = results.offsetShuffledConnectionsToChildren(chunkCornerPos);
 
@@ -118,7 +129,8 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			return Optional.empty();
 		}
 		
-		return Optional.of(new Structure.GenerationStub(new BlockPos(centerX, startHeight, centerZ), builder -> {
+		BlockPos structureOrigin = new BlockPos(centerX, startHeight, centerZ);
+		return Optional.of(new Structure.GenerationStub(structureOrigin, builder -> {
 			List<DynamicJigsawStructurePiece> pieces = Lists.newArrayList();
 			pieces.add(startPiece);
 			int maxDepth = params.size();
@@ -144,7 +156,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 				while (!placer.placingQueue.isEmpty())
 				{
 					OctreePieceState state = placer.placingQueue.remove();
-					placementCounter = placer.tryPlacingChildren(context, state, params.liquidSettings(), placementCounter);
+					placementCounter = placer.tryPlacingChildren(context, state, structureOrigin, params.liquidSettings(), placementCounter);
 				}
 				
 				pieces.forEach(builder::addPiece);
@@ -158,7 +170,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 		return pool -> (!pool.value().elements().isEmpty()) || (!pool.value().delegates().isEmpty()) || location == DynamicJigsawPool.EMPTY;
 	}
 	
-	private int tryPlacingChildren(GenerationContext context, OctreePieceState state, LiquidSettings liquidSettings, int placementCounter)
+	private int tryPlacingChildren(GenerationContext context, OctreePieceState state, BlockPos structureOrigin, LiquidSettings liquidSettings, int placementCounter)
 	{
 		SubtractiveOctree totalOctree = state.octree();
 		DynamicJigsawStructurePiece parentPiece = state.piece();
@@ -228,7 +240,7 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 				for (Rotation childRotation : Rotation.getShuffled(this.random))
 				{
 					JigsawData childData = parentData.fork();
-					DynamicJigsawResult childResults = childElement.bake(new DynamicJigsawBakeContext(context, permittedSpace, parentJigsaw, remainingConnections, childData, childRotation, liquidSettings));
+					DynamicJigsawResult childResults = childElement.bake(new DynamicJigsawBakeContext(context, permittedSpace, parentJigsaw, structureOrigin, remainingConnections, childData, childRotation, liquidSettings));
 					List<JigsawConnectionToParent> localChildJigsaws = childResults.shuffledLocalConnectionsToParent();
 					for (JigsawConnectionToParent localChildJigsaw : localChildJigsaws)
 					{
