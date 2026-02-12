@@ -143,7 +143,7 @@ public class DynamicProcessorListProcessor extends StructureProcessor implements
 		StructurePlaceSettings placementSettings,
 		@Nullable StructureTemplate template)
 	{
-		@Nullable StructureEntityInfo modifiedInfo = rawEntityInfo;
+		@Nullable StructureEntityInfo modifiedInfo = entityInfo;
 		for (DynamicProcessor processor : this.processors.value())
 		{
 			modifiedInfo = processor.processEntity(world, seedPos, rawEntityInfo, modifiedInfo, placementSettings, template, this);

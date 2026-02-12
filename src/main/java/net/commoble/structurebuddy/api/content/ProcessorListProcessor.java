@@ -109,7 +109,7 @@ public class ProcessorListProcessor extends StructureProcessor
 		StructurePlaceSettings placementSettings,
 		@Nullable StructureTemplate template)
 	{
-		@Nullable StructureEntityInfo modifiedInfo = rawEntityInfo;
+		@Nullable StructureEntityInfo modifiedInfo = entityInfo;
 		for (var processor : this.processors.value().list())
 		{
 			modifiedInfo = processor.processEntity(world, seedPos, rawEntityInfo, modifiedInfo, placementSettings, template);
