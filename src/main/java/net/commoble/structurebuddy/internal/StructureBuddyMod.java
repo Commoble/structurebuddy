@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.SequencedSet;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.jetbrains.annotations.ApiStatus;
 
@@ -28,8 +27,8 @@ import net.commoble.structurebuddy.api.content.EmptyBoxElement;
 import net.commoble.structurebuddy.api.content.EmptyDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.EmptyPieceFiller;
 import net.commoble.structurebuddy.api.content.FeatureDynamicJigsawElement;
-import net.commoble.structurebuddy.api.content.FixBlockAttachedEntitiesProcessor;
 import net.commoble.structurebuddy.api.content.FeatureDynamicJigsawElement.FeaturePieceFiller;
+import net.commoble.structurebuddy.api.content.FixBlockAttachedEntitiesProcessor;
 import net.commoble.structurebuddy.api.content.ItemFrameLootProcessor;
 import net.commoble.structurebuddy.api.content.NopDynamicProcessor;
 import net.commoble.structurebuddy.api.content.ProcessorListDynamicProcessor;
@@ -57,6 +56,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
@@ -210,8 +210,10 @@ public class StructureBuddyMod
 		knownGoodPools.add(holder);
 	}
 	
-	private static <T extends StructureProcessor> Supplier<StructureProcessorType<T>> registerStructureProcessor(DeferredRegister<StructureProcessorType<?>> defreg, ResourceKey<StructureProcessorType<?>> key, MapCodec<T> codec)
+	private static <T extends StructureProcessor> DeferredHolder<StructureProcessorType<?>, StructureProcessorType<T>> registerStructureProcessor(DeferredRegister<StructureProcessorType<?>> defreg, ResourceKey<StructureProcessorType<?>> key, MapCodec<T> codec)
 	{
-		return () -> () -> codec;
+		return defreg.register(
+			key.identifier().getPath(),
+			() -> () -> codec);
 	}
 }
