@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -86,6 +87,7 @@ public class ItemFrameLootProcessor extends StructureProcessor
 		
 		if (levelReader instanceof ServerLevelAccessor serverLevelAccessor)
 		{
+			
 			CompoundTag entityNBT = currentInfo.nbt;
 			entityNBT.getString("id").ifPresent(stringId -> {
 				Identifier id = Identifier.parse(stringId);
@@ -94,7 +96,7 @@ public class ItemFrameLootProcessor extends StructureProcessor
 					{
 						// generate and set itemstack
 						ItemStack stack = this.generateItemStack(serverLevelAccessor.getLevel(), currentInfo.blockPos);
-						currentInfo.nbt.store("Item", ItemStack.CODEC, stack);
+						currentInfo.nbt.store("Item", ItemStack.CODEC, serverLevelAccessor.registryAccess().createSerializationContext(NbtOps.INSTANCE), stack);
 					}
 				});
 			});
