@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.SequencedSet;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jetbrains.annotations.ApiStatus;
 
@@ -18,6 +19,7 @@ import net.commoble.structurebuddy.api.DynamicProcessor;
 import net.commoble.structurebuddy.api.PieceFiller;
 import net.commoble.structurebuddy.api.StructureBuddy;
 import net.commoble.structurebuddy.api.StructureBuddyRegistries;
+import net.commoble.structurebuddy.api.content.BlockStateProcessor;
 import net.commoble.structurebuddy.api.content.BoxDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.DynamicJigsawStructure;
 import net.commoble.structurebuddy.api.content.DynamicJigsawStructurePiece;
@@ -26,7 +28,9 @@ import net.commoble.structurebuddy.api.content.EmptyBoxElement;
 import net.commoble.structurebuddy.api.content.EmptyDynamicJigsawElement;
 import net.commoble.structurebuddy.api.content.EmptyPieceFiller;
 import net.commoble.structurebuddy.api.content.FeatureDynamicJigsawElement;
+import net.commoble.structurebuddy.api.content.FixBlockAttachedEntitiesProcessor;
 import net.commoble.structurebuddy.api.content.FeatureDynamicJigsawElement.FeaturePieceFiller;
+import net.commoble.structurebuddy.api.content.ItemFrameLootProcessor;
 import net.commoble.structurebuddy.api.content.NopDynamicProcessor;
 import net.commoble.structurebuddy.api.content.ProcessorListDynamicProcessor;
 import net.commoble.structurebuddy.api.content.ProcessorListProcessor;
@@ -45,6 +49,7 @@ import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
@@ -84,17 +89,16 @@ public class StructureBuddyMod
 
 		structurePieceTypes.register(DynamicJigsawStructurePiece.HOLDER.getId().getPath(),
 			() -> DynamicJigsawStructurePiece::new);
-		
-		structureProcessorTypes.register(DynamicProcessorListProcessor.HOLDER.getId().getPath(), () -> {
-			// for whatever reason eclipse won't compile this without explicitly declaring the type
-			StructureProcessorType<DynamicProcessorListProcessor> type = () -> DynamicProcessorListProcessor.CODEC;
-			return type;
-		});
-		structureProcessorTypes.register(ProcessorListProcessor.HOLDER.getId().getPath(), () -> {
-			StructureProcessorType<ProcessorListProcessor> type = () -> ProcessorListProcessor.CODEC;
-			return type;
-		});
-		
+
+		// for whatever reason
+		// eclipse won't compile structureProcessorTypes.register(name, () -> () -> codec)
+		// so, using a helper to shorten it from what we'd otherwise have to do here
+		registerStructureProcessor(structureProcessorTypes, BlockStateProcessor.KEY, BlockStateProcessor.CODEC);
+		registerStructureProcessor(structureProcessorTypes, DynamicProcessorListProcessor.KEY, DynamicProcessorListProcessor.CODEC);
+		registerStructureProcessor(structureProcessorTypes, FixBlockAttachedEntitiesProcessor.KEY, FixBlockAttachedEntitiesProcessor.CODEC);
+		registerStructureProcessor(structureProcessorTypes, ItemFrameLootProcessor.KEY, ItemFrameLootProcessor.CODEC);
+		registerStructureProcessor(structureProcessorTypes, ProcessorListProcessor.KEY, ProcessorListProcessor.CODEC);
+				
 		structureTypes.<StructureType<DynamicJigsawStructure>>register(
 			DynamicJigsawStructure.HOLDER.getId().getPath(),
 			() -> () -> DynamicJigsawStructure.CODEC);
@@ -204,5 +208,10 @@ public class StructureBuddyMod
 		}
 		
 		knownGoodPools.add(holder);
+	}
+	
+	private static <T extends StructureProcessor> Supplier<StructureProcessorType<T>> registerStructureProcessor(DeferredRegister<StructureProcessorType<?>> defreg, ResourceKey<StructureProcessorType<?>> key, MapCodec<T> codec)
+	{
+		return () -> () -> codec;
 	}
 }
