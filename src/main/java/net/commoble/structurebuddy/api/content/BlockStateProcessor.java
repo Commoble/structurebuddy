@@ -42,7 +42,7 @@ public class BlockStateProcessor extends StructureProcessor
 	
 	/// ```json
 	/// {
-	/// 	"type": "structurebuddy:blockstate",
+	/// 	"processor_type": "structurebuddy:blockstate",
 	/// 	"input_predicate": {}, // optional RuleTest testing the current blockstate being processed
 	/// 	"location_predicate": {}, // optional RuleTest testing the blockstate-in-world where the processed blockstate would be placed
 	/// 	"position_predicate": {}, // optional PosRuleTest testing the position to place the block at

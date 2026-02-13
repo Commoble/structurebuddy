@@ -51,7 +51,7 @@ public class ItemFrameLootProcessor extends StructureProcessor
 	
 	/// ```json
 	/// {
-	/// 	"type": "structurebuddy:item_frame_loot",
+	/// 	"processor_type": "structurebuddy:item_frame_loot",
 	/// 	"loot_table": "modid:loot_table_id"
 	/// }
 	/// ```

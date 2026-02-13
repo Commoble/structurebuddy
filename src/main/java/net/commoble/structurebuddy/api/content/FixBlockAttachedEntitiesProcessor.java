@@ -42,7 +42,7 @@ public class FixBlockAttachedEntitiesProcessor extends StructureProcessor
 	
 	/// ```json
 	/// {
-	/// 	"type": "structurebuddy:fix_block_attached_entities",
+	/// 	"processor_type": "structurebuddy:fix_block_attached_entities",
 	/// 	"entity_types": "#c:item_frames",
 	/// 	"facing_type": "item_frame" // optional, can be "item_frame" or "painting" or absent
 	/// }

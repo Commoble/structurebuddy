@@ -31,7 +31,7 @@ public class DynamicProcessorListProcessor extends StructureProcessor implements
 {
 	/// ```json
 	/// {
-	/// 	"type": "structurebuddy": "dynamic_processor_list",
+	/// 	"processor_type": "structurebuddy": "dynamic_processor_list",
 	/// 	"processors": [
 	/// 		{
 	/// 			// dynamic processor object

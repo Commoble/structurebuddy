@@ -27,7 +27,7 @@ public class ProcessorListProcessor extends StructureProcessor
 {
 	/// ```json
 	/// {
-	/// 	"type": "structurebuddy:processor_list",
+	/// 	"processor_type": "structurebuddy:processor_list",
 	/// 	"processors": "modid:another_processor_list"
 	/// }
 	/// ```
