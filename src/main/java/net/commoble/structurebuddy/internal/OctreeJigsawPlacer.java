@@ -206,8 +206,12 @@ public record OctreeJigsawPlacer(Registry<DynamicJigsawPool> jigsawPools, int ma
 			if (state.depth() != this.maxDepth)
 			{
 				elements.addAll(pool.getShuffledElements(this.random));
+				elements.addAll(pool.getShuffledFallbacks(this.random, true));
 			}
-			elements.addAll(pool.getShuffledFallbacks(this.random));
+			else
+			{
+				elements.addAll(pool.getShuffledFallbacks(this.random, false));	
+			}
 			for (Holder<DynamicJigsawElement> childElementHolder : elements)
 			{
 				DynamicJigsawElement childElement = childElementHolder.value();

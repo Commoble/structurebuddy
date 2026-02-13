@@ -2,7 +2,9 @@ package net.commoble.structurebuddy.api;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
@@ -35,13 +37,15 @@ import net.minecraft.util.random.WeightedList;
  * @param delegates WeightedList of HolderSets of sub-pools to pull elements from. For HolderSets with multiple elements, each pool receives the same weight. Weights of pools and pools' sub-elements are multiplied together.
  * @param combinedElements memoized WeightedList of all elements both from this pool's primary elements and each of its delegates
  * @param combinedFallbacks memoized WeightedList of fallback elements (including from delegates if requested by keepDelegateFallbacks)
+ * @param trimmedFallbacks memoized WeightedList of fallback elementst, excluding elements from combinedElements
  */
 public record DynamicJigsawPool(
 	Optional<HolderSet<DynamicJigsawPool>> fallback,
 	WeightedList<HolderSet<DynamicJigsawElement>> elements,
 	WeightedList<HolderSet<DynamicJigsawPool>> delegates,
 	Supplier<WeightedList<Holder<DynamicJigsawElement>>> combinedElements,
-	Supplier<WeightedList<Holder<DynamicJigsawElement>>> combinedFallbacks)
+	Supplier<WeightedList<Holder<DynamicJigsawElement>>> combinedFallbacks,
+	Supplier<WeightedList<Holder<DynamicJigsawElement>>> trimmedFallbacks)
 {
 	/** structurebuddy:dynamic_jigsaw_pool / structurebuddy:empty - special pool provided by StructureBuddy which has no elements. This should be used instead of making an empty pool yourself  */
 	public static final ResourceKey<DynamicJigsawPool> EMPTY = ResourceKey.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, StructureBuddy.id("empty"));
@@ -59,7 +63,8 @@ public record DynamicJigsawPool(
 	{
 		this(fallback, elements, delegates,
 			Suppliers.memoize(() -> combineElements(elements, delegates)),
-			Suppliers.memoize(() -> combineFallbacks(fallback, delegates)));
+			Suppliers.memoize(() -> combineFallbacks(fallback)),
+			Suppliers.memoize(() -> trimFallbacks(fallback, elements, delegates)));
 	}
 	
 	/**
@@ -146,11 +151,10 @@ public record DynamicJigsawPool(
 	}
 	
 	/**
-	 * {@return WeightedList of fallback elements (including from delegates if this.keepDelegateFallbacks is true)}
+	 * {@return WeightedList of fallback elements}
 	 * @param fallback Optional alternate pool to use at the final jigsaw depth or if all elements of this pool fail to generate
-	 * @param delegates WeightedList of sub-pools to pull elements from. Weights of pools and sub-elements are multiplied together.
 	 */
-	public static WeightedList<Holder<DynamicJigsawElement>> combineFallbacks(Optional<HolderSet<DynamicJigsawPool>> fallback, WeightedList<HolderSet<DynamicJigsawPool>> delegates)
+	public static WeightedList<Holder<DynamicJigsawElement>> combineFallbacks(Optional<HolderSet<DynamicJigsawPool>> fallback)
 	{
 		Reference2IntMap<Holder<DynamicJigsawElement>> weightMap = new Reference2IntOpenHashMap<>();
 		for (Holder<DynamicJigsawPool> poolHolder : fallback.orElse(HolderSet.empty()))
@@ -164,12 +168,30 @@ public record DynamicJigsawPool(
 	}
 	
 	/**
+	 * {@return WeightedList of fallback elements, excluding elements in primary element set}
+	 * @param fallback Optional alternate pool to use at the final jigsaw depth or if all elements of this pool fail to generate
+	 * @param elements WeightedList of DynamicJigsawElements.
+	 * @param delegates WeightedList of sub-pools to pull elements from. Weights of pools and sub-elements are multiplied together.
+	 */
+	public static WeightedList<Holder<DynamicJigsawElement>> trimFallbacks(Optional<HolderSet<DynamicJigsawPool>> fallback, WeightedList<HolderSet<DynamicJigsawElement>> elements, WeightedList<HolderSet<DynamicJigsawPool>> delegates)
+	{
+		WeightedList<Holder<DynamicJigsawElement>> nominalFallbacks = combineFallbacks(fallback);
+		WeightedList<Holder<DynamicJigsawElement>> primaryElements = combineElements(elements, delegates);
+		Set<Holder<DynamicJigsawElement>> primarySet = primaryElements.unwrap().stream().map(Weighted::value).collect(Collectors.toSet());
+		return WeightedList.of(nominalFallbacks.unwrap().stream().filter(weighted -> !primarySet.contains(weighted.value())).toList());
+	}
+	
+	/**
 	 * {@return Collection of fallbacks, shuffled (including fallbacks from delegates of this.keepDelegateFallbacks is true)}
 	 * @param random RandomSource suitable for RNG during worldgen
+	 * @param skipPrimaryElements If true, will not include fallback elements which are also included in the non-fallback elements
 	 */
-	public List<Holder<DynamicJigsawElement>> getShuffledFallbacks(RandomSource random)
+	public List<Holder<DynamicJigsawElement>> getShuffledFallbacks(RandomSource random, boolean skipPrimaryElements)
 	{
-		return RandomBuddy.shuffleWeightedList(this.combinedFallbacks().get(), random);
+		WeightedList<Holder<DynamicJigsawElement>> fallbackList = skipPrimaryElements
+			? this.trimmedFallbacks.get()
+			: this.combinedFallbacks.get();
+		return RandomBuddy.shuffleWeightedList(fallbackList, random);
 	}
 	
 	/**
