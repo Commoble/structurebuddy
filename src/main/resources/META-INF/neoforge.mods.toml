@@ -8,7 +8,7 @@ modId="structurebuddy" #mandatory
 version="${file.jarVersion}" #mandatory
 displayName="Structurebuddy" #mandatory
 ##displayURL="https://change.me.to.your.mods.homepage.example.invalid/" #optional
-#logoFile="structurebuddy.png" #optional
+logoFile="structurebuddy.png" #optional
 credits="I hear the Minecraft Mod Development discord channel is the cat's bananas" #optional
 authors="Commoble"
 description='''
@@ -23,7 +23,7 @@ including a faster jigsaw assembler which allows structure pieces with random si
     # Does this dependency have to exist - if not, ordering below must be specified
     mandatory=true #mandatory
     # The version range of the dependency
-    versionRange="[26.1.0.0-alpha.8+snapshot-4,26.2)" #mandatory
+    versionRange="[26.1.0.0-alpha.0,)" #mandatory
     # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
     ordering="NONE"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
@@ -33,6 +33,6 @@ including a faster jigsaw assembler which allows structure pieces with random si
     modId="minecraft"
     mandatory=true
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
-    versionRange="[26.1-snapshot-4,26.2)"
+    versionRange="[26.1-snapshot-7,26.2)"
     ordering="NONE"
     side="BOTH"

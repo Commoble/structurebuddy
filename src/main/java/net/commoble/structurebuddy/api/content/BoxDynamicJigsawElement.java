@@ -18,6 +18,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
@@ -54,9 +55,9 @@ public record BoxDynamicJigsawElement(
 	/// ```
 	public static final MapCodec<BoxDynamicJigsawElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
 			BoxElement.CODEC.fieldOf("element").forGetter(BoxDynamicJigsawElement::element),
-			IntProvider.POSITIVE_CODEC.fieldOf("x_size").forGetter(BoxDynamicJigsawElement::xSize),
-			IntProvider.POSITIVE_CODEC.fieldOf("y_size").forGetter(BoxDynamicJigsawElement::ySize),
-			IntProvider.POSITIVE_CODEC.fieldOf("z_size").forGetter(BoxDynamicJigsawElement::zSize)
+			IntProviders.POSITIVE_CODEC.fieldOf("x_size").forGetter(BoxDynamicJigsawElement::xSize),
+			IntProviders.POSITIVE_CODEC.fieldOf("y_size").forGetter(BoxDynamicJigsawElement::ySize),
+			IntProviders.POSITIVE_CODEC.fieldOf("z_size").forGetter(BoxDynamicJigsawElement::zSize)
 		).apply(builder, BoxDynamicJigsawElement::new));
 
 	@Override
