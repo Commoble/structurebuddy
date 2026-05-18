@@ -96,7 +96,10 @@ public class ItemFrameLootProcessor extends StructureProcessor
 					{
 						// generate and set itemstack
 						ItemStack stack = this.generateItemStack(serverLevelAccessor.getLevel(), currentInfo.blockPos);
-						currentInfo.nbt.store("Item", ItemStack.CODEC, serverLevelAccessor.registryAccess().createSerializationContext(NbtOps.INSTANCE), stack);
+						if (!stack.isEmpty())
+						{
+							currentInfo.nbt.store("Item", ItemStack.CODEC, serverLevelAccessor.registryAccess().createSerializationContext(NbtOps.INSTANCE), stack);	
+						}
 					}
 				});
 			});
