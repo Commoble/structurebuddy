@@ -23,7 +23,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 /// StructureProcessor which delegates to another processor list
-public class ProcessorListProcessor extends StructureProcessor
+public class ProcessorListProcessor implements StructureProcessor
 {
 	/// ```json
 	/// {
@@ -36,9 +36,9 @@ public class ProcessorListProcessor extends StructureProcessor
 		.fieldOf("processors");
 	
 	/** minecraft:worldgen/structure_processor / structurebuddy:processor_list **/
-	public static final ResourceKey<StructureProcessorType<?>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("processor_list"));
+	public static final ResourceKey<MapCodec<? extends StructureProcessor>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("processor_list"));
 	/** holder **/
-	public static final DeferredHolder<StructureProcessorType<?>,StructureProcessorType<ProcessorListProcessor>> HOLDER = DeferredHolder.create(KEY);
+	public static final DeferredHolder<MapCodec<? extends StructureProcessor>, MapCodec<ProcessorListProcessor>> HOLDER = DeferredHolder.create(KEY);
 		
 	private final Holder<StructureProcessorList> processors;
 	
@@ -58,7 +58,7 @@ public class ProcessorListProcessor extends StructureProcessor
 	}
 	
 	@Override
-	protected StructureProcessorType<?> getType()
+	public MapCodec<? extends StructureProcessor> codec()
 	{
 		return HOLDER.get();
 	}

@@ -20,14 +20,13 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureEntityInfo;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 /// StructureProcessor impl which delegates to a DynamicProcessor list
-public class DynamicProcessorListProcessor extends StructureProcessor implements JigsawPieceDataReader
+public class DynamicProcessorListProcessor implements StructureProcessor, JigsawPieceDataReader
 {
 	/// ```json
 	/// {
@@ -48,9 +47,9 @@ public class DynamicProcessorListProcessor extends StructureProcessor implements
 		).apply(builder, DynamicProcessorListProcessor::new));
 	
 	/** minecraft:worldgen/structure_processor / structurebuddy:dynamic_processor_list **/
-	public static final ResourceKey<StructureProcessorType<?>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("dynamic_processor_list"));
+	public static final ResourceKey<MapCodec<? extends StructureProcessor>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("dynamic_processor_list"));
 	/** holder **/
-	public static final DeferredHolder<StructureProcessorType<?>,StructureProcessorType<DynamicProcessorListProcessor>> HOLDER = DeferredHolder.create(KEY);
+	public static final DeferredHolder<MapCodec<? extends StructureProcessor>, MapCodec<DynamicProcessorListProcessor>> HOLDER = DeferredHolder.create(KEY);
 		
 	private final Holder<List<DynamicProcessor>> processors;
 	private final Map<JigsawDataType<?>, Object> jigsawData;
@@ -79,7 +78,7 @@ public class DynamicProcessorListProcessor extends StructureProcessor implements
 	}
 	
 	@Override
-	protected StructureProcessorType<?> getType()
+	public MapCodec<? extends StructureProcessor> codec()
 	{
 		return HOLDER.get();
 	}

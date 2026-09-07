@@ -27,7 +27,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureEntityInfo;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -43,12 +42,12 @@ import net.neoforged.neoforge.registries.DeferredHolder;
  * If processed entity is an item frame, a loot table is rolled and the result added to the frame.
  * Applies to any entity in the c:item_frames entity_type tag.
  */
-public class ItemFrameLootProcessor extends StructureProcessor
+public class ItemFrameLootProcessor implements StructureProcessor
 {
 	/// minecraft:worldgen/structure_processor / structurebuddy:item_frame_loot
-	public static final ResourceKey<StructureProcessorType<?>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("item_frame_loot"));
+	public static final ResourceKey<MapCodec<? extends StructureProcessor>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("item_frame_loot"));
 	/// holder
-	public static final DeferredHolder<StructureProcessorType<?>, StructureProcessorType<ItemFrameLootProcessor>> HOLDER = DeferredHolder.create(KEY);
+	public static final DeferredHolder<MapCodec<? extends StructureProcessor>, MapCodec<ItemFrameLootProcessor>> HOLDER = DeferredHolder.create(KEY);
 	
 	/// ```json
 	/// {
@@ -75,7 +74,7 @@ public class ItemFrameLootProcessor extends StructureProcessor
 	}
 
 	@Override
-	protected StructureProcessorType<?> getType()
+	public MapCodec<? extends StructureProcessor> codec()
 	{
 		return HOLDER.get();
 	}
@@ -83,7 +82,7 @@ public class ItemFrameLootProcessor extends StructureProcessor
 	@Override
 	public StructureEntityInfo processEntity(LevelReader levelReader, BlockPos seedPos, StructureEntityInfo rawEntityInfo, StructureEntityInfo entityInfo, StructurePlaceSettings placementSettings, StructureTemplate template)
 	{
-		StructureEntityInfo currentInfo = super.processEntity(levelReader, seedPos, rawEntityInfo, entityInfo, placementSettings, template);
+		StructureEntityInfo currentInfo = entityInfo;
 		
 		if (levelReader instanceof ServerLevelAccessor serverLevelAccessor)
 		{

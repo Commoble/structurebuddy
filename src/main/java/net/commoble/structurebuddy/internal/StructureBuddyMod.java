@@ -49,14 +49,12 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.registries.DataPackRegistryEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
@@ -77,7 +75,7 @@ public class StructureBuddyMod
 		
 		// vanilla registries
 		DeferredRegister<StructurePieceType> structurePieceTypes = defreg(Registries.STRUCTURE_PIECE);
-		DeferredRegister<StructureProcessorType<?>> structureProcessorTypes = defreg(Registries.STRUCTURE_PROCESSOR);
+		DeferredRegister<MapCodec<? extends StructureProcessor>> structureProcessorTypes = defreg(Registries.STRUCTURE_PROCESSOR);
 		DeferredRegister<StructureType<?>> structureTypes = defreg(Registries.STRUCTURE_TYPE);
 		
 		// custom registries
@@ -90,14 +88,11 @@ public class StructureBuddyMod
 		structurePieceTypes.register(DynamicJigsawStructurePiece.HOLDER.getId().getPath(),
 			() -> DynamicJigsawStructurePiece::new);
 
-		// for whatever reason
-		// eclipse won't compile structureProcessorTypes.register(name, () -> () -> codec)
-		// so, using a helper to shorten it from what we'd otherwise have to do here
-		registerStructureProcessor(structureProcessorTypes, BlockStateProcessor.KEY, BlockStateProcessor.CODEC);
-		registerStructureProcessor(structureProcessorTypes, DynamicProcessorListProcessor.KEY, DynamicProcessorListProcessor.CODEC);
-		registerStructureProcessor(structureProcessorTypes, FixBlockAttachedEntitiesProcessor.KEY, FixBlockAttachedEntitiesProcessor.CODEC);
-		registerStructureProcessor(structureProcessorTypes, ItemFrameLootProcessor.KEY, ItemFrameLootProcessor.CODEC);
-		registerStructureProcessor(structureProcessorTypes, ProcessorListProcessor.KEY, ProcessorListProcessor.CODEC);
+		structureProcessorTypes.register(BlockStateProcessor.KEY.identifier().getPath(), () -> BlockStateProcessor.CODEC);
+		structureProcessorTypes.register(DynamicProcessorListProcessor.KEY.identifier().getPath(), () -> DynamicProcessorListProcessor.CODEC);
+		structureProcessorTypes.register(FixBlockAttachedEntitiesProcessor.KEY.identifier().getPath(), () -> FixBlockAttachedEntitiesProcessor.CODEC);
+		structureProcessorTypes.register(ItemFrameLootProcessor.KEY.identifier().getPath(), () -> ItemFrameLootProcessor.CODEC);
+		structureProcessorTypes.register(ProcessorListProcessor.KEY.identifier().getPath(), () -> ProcessorListProcessor.CODEC);
 				
 		structureTypes.<StructureType<DynamicJigsawStructure>>register(
 			DynamicJigsawStructure.HOLDER.getId().getPath(),
@@ -208,12 +203,5 @@ public class StructureBuddyMod
 		}
 		
 		knownGoodPools.add(holder);
-	}
-	
-	private static <T extends StructureProcessor> DeferredHolder<StructureProcessorType<?>, StructureProcessorType<T>> registerStructureProcessor(DeferredRegister<StructureProcessorType<?>> defreg, ResourceKey<StructureProcessorType<?>> key, MapCodec<T> codec)
-	{
-		return defreg.register(
-			key.identifier().getPath(),
-			() -> () -> codec);
 	}
 }

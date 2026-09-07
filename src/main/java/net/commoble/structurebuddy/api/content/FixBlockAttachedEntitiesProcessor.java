@@ -24,7 +24,6 @@ import net.minecraft.world.entity.decoration.painting.Painting;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureEntityInfo;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -33,12 +32,12 @@ import net.neoforged.neoforge.registries.DeferredHolder;
  * StructureProcessor for processing BlockAttachedEntities (leash knots, item frames, paintings)
  * Fixes entity nbt data so that they are correctly positioned and rotated and no errors are raised when structures are generated
  */
-public class FixBlockAttachedEntitiesProcessor extends StructureProcessor
+public class FixBlockAttachedEntitiesProcessor implements StructureProcessor
 {
 	/// minecraft:worldgen/structure_processor / structurebuddy:fix_block_attached_entities
-	public static final ResourceKey<StructureProcessorType<?>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("fix_block_attached_entities"));
+	public static final ResourceKey<MapCodec<? extends StructureProcessor>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("fix_block_attached_entities"));
 	/// holder
-	public static final DeferredHolder<StructureProcessorType<?>, StructureProcessorType<ItemFrameLootProcessor>> HOLDER = DeferredHolder.create(KEY);
+	public static final DeferredHolder<MapCodec<? extends StructureProcessor>, MapCodec<FixBlockAttachedEntitiesProcessor>> HOLDER = DeferredHolder.create(KEY);
 	
 	/// ```json
 	/// {
@@ -49,7 +48,7 @@ public class FixBlockAttachedEntitiesProcessor extends StructureProcessor
 	/// ```
 	public static final MapCodec<FixBlockAttachedEntitiesProcessor> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
 			HolderSetCodec.create(Registries.ENTITY_TYPE, BuiltInRegistries.ENTITY_TYPE.holderByNameCodec(), false).fieldOf("entity_types").forGetter(FixBlockAttachedEntitiesProcessor::entityTypes),
-			FacingType.CODEC.optionalFieldOf("facingType").forGetter(FixBlockAttachedEntitiesProcessor::facingType)
+			FacingType.CODEC.optionalFieldOf("facing_type").forGetter(FixBlockAttachedEntitiesProcessor::facingType)
 		).apply(instance, FixBlockAttachedEntitiesProcessor::new));
 	
 	private final HolderSet<EntityType<?>> entityTypes;
@@ -79,7 +78,7 @@ public class FixBlockAttachedEntitiesProcessor extends StructureProcessor
 	}
 
 	@Override
-	protected StructureProcessorType<?> getType()
+	public MapCodec<? extends StructureProcessor> codec()
 	{
 		return HOLDER.get();
 	}
@@ -87,7 +86,7 @@ public class FixBlockAttachedEntitiesProcessor extends StructureProcessor
 	@Override
 	public StructureEntityInfo processEntity(LevelReader levelReader, BlockPos seedPos, StructureEntityInfo rawEntityInfo, StructureEntityInfo entityInfo, StructurePlaceSettings placementSettings, StructureTemplate template)
 	{
-		StructureEntityInfo currentInfo = super.processEntity(levelReader, seedPos, rawEntityInfo, entityInfo, placementSettings, template);
+		StructureEntityInfo currentInfo = entityInfo;
 		
 		CompoundTag entityNBT = currentInfo.nbt;
 		if (entityNBT

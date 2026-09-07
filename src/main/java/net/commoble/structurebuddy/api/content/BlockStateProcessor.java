@@ -25,7 +25,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.PosRuleTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -33,12 +32,12 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 /**
  * StructureProcessor which applies blockstate properties from some given blockstate to blockstates in the structure template
  */
-public class BlockStateProcessor extends StructureProcessor
+public class BlockStateProcessor implements StructureProcessor
 {
 	/// minecraft:worldgen/structure_processor / structurebuddy:blockstatet
-	public static final ResourceKey<StructureProcessorType<?>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("blockstate"));
+	public static final ResourceKey<MapCodec<? extends StructureProcessor>> KEY = ResourceKey.create(Registries.STRUCTURE_PROCESSOR, StructureBuddy.id("blockstate"));
 	/// holder
-	public static final DeferredHolder<StructureProcessorType<?>, StructureProcessorType<BlockStateProcessor>> HOLDER = DeferredHolder.create(KEY);
+	public static final DeferredHolder<MapCodec<? extends StructureProcessor>, MapCodec<BlockStateProcessor>> HOLDER = DeferredHolder.create(KEY);
 	
 	/// ```json
 	/// {
@@ -114,7 +113,7 @@ public class BlockStateProcessor extends StructureProcessor
 	}
 	
 	@Override
-	protected StructureProcessorType<?> getType()
+	public MapCodec<? extends StructureProcessor> codec()
 	{
 		return HOLDER.get();
 	}
