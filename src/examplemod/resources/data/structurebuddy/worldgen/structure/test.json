@@ -9,6 +9,6 @@
 		"min_inclusive": {"absolute": 70},
 		"max_inclusive": {"absolute": 100}
 	},
-	"start_pool": "structurebuddy:test",
+	"start_pool": "structurebuddy:test_start",
 	"step": "underground_structures"
 }
