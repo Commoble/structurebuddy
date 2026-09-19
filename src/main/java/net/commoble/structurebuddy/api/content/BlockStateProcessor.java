@@ -131,11 +131,11 @@ public class BlockStateProcessor implements StructureProcessor
         @SuppressWarnings("deprecation")
 		RandomSource random = RandomSource.create(Mth.getSeed(processedBlockInfo.pos()));
 		BlockState state = processedBlockInfo.state();
-		if (this.inputPredicate.test(state, random))
+		BlockPos pos = processedBlockInfo.pos();
+		if (this.inputPredicate.test(state, pos, random))
 		{
-			BlockPos pos = processedBlockInfo.pos();
 			BlockState worldState = level.getBlockState(pos);
-			if (this.locationPredicate.test(worldState, random))
+			if (this.locationPredicate.test(worldState, pos, random))
 			{
 				if (this.positionPredicate.test(originalBlockInfo.pos(), pos, referencePos, random))
 				{

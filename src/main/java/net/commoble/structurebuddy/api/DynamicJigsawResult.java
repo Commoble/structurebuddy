@@ -272,7 +272,7 @@ public record DynamicJigsawResult(
 	 */
 	public static void addConnectionsFromTemplateJigsaw(JigsawBlockInfo jigsaw, List<SelectableJigsawConnectionToParent> selectableJigsawConnectionsToParents, List<JigsawConnectionToChild> connectionsToChildren, Map<Identifier, JigsawOverrides> jigsawOverrides)
 	{
-		Identifier originalName = jigsaw.name();
+		@Nullable Identifier originalName = jigsaw.name();
 		@Nullable JigsawOverrides overrides = jigsawOverrides.get(originalName);
 		Identifier name = overrides == null ? originalName : overrides.name().orElse(originalName);
 		Identifier targetName = overrides == null ? jigsaw.target() : overrides.targetName().orElseGet(jigsaw::target);
@@ -280,8 +280,8 @@ public record DynamicJigsawResult(
 		ResourceKey<DynamicJigsawPool> targetPoolKey = overrides == null
 			? originalKey 
 			: overrides.targetPool().orElse(originalKey);
-		BlockPos pos = jigsaw.info().pos();
-		FrontAndTop orientation = jigsaw.info().state().getValue(JigsawBlock.ORIENTATION);
+		BlockPos pos = jigsaw.pos();
+		FrontAndTop orientation = jigsaw.state().getValue(JigsawBlock.ORIENTATION);
 		if (!targetName.equals(EMPTY_NAME) && targetPoolKey != DynamicJigsawPool.EMPTY)
 		{
 			connectionsToChildren.add(new JigsawConnectionToChild(
@@ -292,13 +292,13 @@ public record DynamicJigsawResult(
 				targetName
 			));
 		}
-		if (!name.equals(EMPTY_NAME))
+		if (name != null && !name.equals(EMPTY_NAME))
 		{
 			selectableJigsawConnectionsToParents.add(
 				new SelectableJigsawConnectionToParent(
 					new JigsawConnectionToParent(
-						jigsaw.info().pos(),
-						jigsaw.info().state().getValue(JigsawBlock.ORIENTATION),
+						jigsaw.pos(),
+						jigsaw.state().getValue(JigsawBlock.ORIENTATION),
 						name,
 						overrides == null ? jigsaw.placementPriority() : overrides.placementPriority().orElseGet(jigsaw::placementPriority)),
 					overrides == null ? jigsaw.selectionPriority() : overrides.selectionPriority().orElseGet(jigsaw::selectionPriority)));

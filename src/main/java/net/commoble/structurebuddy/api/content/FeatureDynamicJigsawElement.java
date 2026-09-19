@@ -23,7 +23,7 @@ import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pools.FeaturePoolElement;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -32,11 +32,12 @@ import net.neoforged.neoforge.registries.DeferredHolder;
  * DynamicJigsawElement which places a ConfiguredFeature at the location of its jigsaw connection.
  * Roughly analogous to {@link FeaturePoolElement} but can connect to the parent piece more flexibly.
  * Still doesn't produce a bounding box around its feature to avoid overlap;
- * if a bounding box is desired, consider registering a DynamicJigsawElement type which generates the required blocks
+ * if a bounding box is desired, consider registering a DynamicJigsawElement type which generates the required blocks.
+ * This element should not be used in a start pool as lack of bounding box is not valid for the start piece.
  * @param feature Holder of a ConfiguredFeature to generate
  * @param jigsawName Identifier of jigsaw connection to be targeted by parent, e.g. "minecraft:bottom"
  */
-public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature, Identifier jigsawName) implements DynamicJigsawElement
+public record FeatureDynamicJigsawElement(Holder<Feature> feature, Identifier jigsawName) implements DynamicJigsawElement
 {
 	private static final Logger LOGGER = LogUtils.getLogger();
 	
@@ -58,7 +59,7 @@ public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature
 	 </pre>
 	 */
 	public static final MapCodec<FeatureDynamicJigsawElement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-			ConfiguredFeature.CODEC.fieldOf("feature").forGetter(FeatureDynamicJigsawElement::feature),
+			Feature.CODEC.fieldOf("feature").forGetter(FeatureDynamicJigsawElement::feature),
 			Identifier.CODEC.optionalFieldOf("jigsaw_name", DEFAULT_JIGSAW_NAME).forGetter(FeatureDynamicJigsawElement::jigsawName)
 		).apply(builder, FeatureDynamicJigsawElement::new));
 			
@@ -96,7 +97,7 @@ public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature
 	 * @param feature Holder of ConfiguredFeature to generate
 	 * @param featurePos BlockPos in absolute world space to generate feature at
 	 */
-	public static record FeaturePieceFiller(Holder<ConfiguredFeature<?,?>> feature, BlockPos featurePos) implements PieceFiller
+	public static record FeaturePieceFiller(Holder<Feature> feature, BlockPos featurePos) implements PieceFiller
 	{
 		/** structurebuddy:piece_filler_type / structurebuddy:feature */
 		public static final ResourceKey<MapCodec<? extends PieceFiller>> KEY = ResourceKey.create(StructureBuddyRegistries.PIECE_FILLER_TYPE, StructureBuddy.id("feature"));
@@ -112,8 +113,8 @@ public record FeatureDynamicJigsawElement(Holder<ConfiguredFeature<?,?>> feature
 		 </pre>
 		 */
 		// javac hates these generics for some reason, use explicit generics on the builder
-		public static final MapCodec<? extends PieceFiller> CODEC = RecordCodecBuilder.<FeaturePieceFiller>mapCodec(builder -> builder.<Holder<ConfiguredFeature<?,?>>, BlockPos>group(
-				ConfiguredFeature.CODEC.fieldOf("feature").forGetter(FeaturePieceFiller::feature),
+		public static final MapCodec<? extends PieceFiller> CODEC = RecordCodecBuilder.<FeaturePieceFiller>mapCodec(builder -> builder.<Holder<Feature>, BlockPos>group(
+				Feature.CODEC.fieldOf("feature").forGetter(FeaturePieceFiller::feature),
 				BlockPos.CODEC.fieldOf("feature_pos").forGetter(FeaturePieceFiller::featurePos)
 			).apply(builder, FeaturePieceFiller::new));
 		

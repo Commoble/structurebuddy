@@ -17,8 +17,8 @@ import net.commoble.structurebuddy.api.content.StructureTemplateDynamicJigsawEle
 import net.commoble.structurebuddy.api.util.RandomBuddy;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.resources.HolderSetCodec;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.HolderSetCodec;
+import net.minecraft.core.registries.codec.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.Weighted;
@@ -114,7 +114,7 @@ public record DynamicJigsawPool(
 	).apply(builder, DynamicJigsawPool::new)));
 	
 	/** Holder Codec suitable for use in other datapack registry files */
-	public static final Codec<Holder<DynamicJigsawPool>> CODEC = RegistryFileCodec.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, DIRECT_CODEC);
+	public static final Codec<Holder<DynamicJigsawPool>> CODEC = RegistryFileCodec.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, DIRECT_CODEC, true);
 	
 	/** HolderSet Codec for DynamicJigsawPools **/
 	public static final Codec<HolderSet<DynamicJigsawPool>> HOLDERSET_CODEC = HolderSetCodec.create(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, CODEC, false);

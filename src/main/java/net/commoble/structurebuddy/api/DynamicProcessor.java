@@ -10,7 +10,7 @@ import com.mojang.serialization.MapCodec;
 import net.commoble.structurebuddy.api.util.CodecBuddy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryFileCodec;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -68,7 +68,7 @@ public interface DynamicProcessor
 		SINGLE_CODEC.listOf());
 	
 	/// Same format as {@link DIRECT_LIST_CODEC}, will serialize as file id if tthis is a registered processor list
-	public static final Codec<Holder<List<DynamicProcessor>>> LIST_HOLDER_CODEC = RegistryFileCodec.create(StructureBuddyRegistries.DYNAMIC_PROCESSOR_LIST, DIRECT_LIST_CODEC);
+	public static final Codec<Holder<List<DynamicProcessor>>> LIST_HOLDER_CODEC = RegistryFileCodec.create(StructureBuddyRegistries.DYNAMIC_PROCESSOR_LIST, DIRECT_LIST_CODEC, true);
 	
 	/// {@return registered MapCodec to serialize this processor with}
 	public abstract MapCodec<? extends DynamicProcessor> codec();
