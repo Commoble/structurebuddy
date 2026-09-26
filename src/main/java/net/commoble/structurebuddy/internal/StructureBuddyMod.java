@@ -54,8 +54,8 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
-import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
 
 /**
  * Mod class for StructureBuddy
@@ -139,13 +139,13 @@ public class StructureBuddyMod
 		return register;
 	}
 	
-	private void onRegisterDatapackRegistries(DataPackRegistryEvent.NewRegistry event)
+	private void onRegisterDatapackRegistries(NewDatapackRegistryEvent event)
 	{
-		event.dataPackRegistry(StructureBuddyRegistries.BOX_ELEMENT, BoxElement.DIRECT_CODEC);
-		event.dataPackRegistry(StructureBuddyRegistries.BOX_POOL, BoxPool.DIRECT_CODEC);
-		event.dataPackRegistry(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT, DynamicJigsawElement.DIRECT_CODEC);
-		event.dataPackRegistry(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, DynamicJigsawPool.DIRECT_CODEC);
-		event.dataPackRegistry(StructureBuddyRegistries.DYNAMIC_PROCESSOR_LIST, DynamicProcessor.DIRECT_LIST_CODEC);
+		event.worldRegistry(StructureBuddyRegistries.BOX_ELEMENT, BoxElement.DIRECT_CODEC);
+		event.worldRegistry(StructureBuddyRegistries.BOX_POOL, BoxPool.DIRECT_CODEC);
+		event.worldRegistry(StructureBuddyRegistries.DYNAMIC_JIGSAW_ELEMENT, DynamicJigsawElement.DIRECT_CODEC);
+		event.worldRegistry(StructureBuddyRegistries.DYNAMIC_JIGSAW_POOL, DynamicJigsawPool.DIRECT_CODEC);
+		event.worldRegistry(StructureBuddyRegistries.DYNAMIC_PROCESSOR_LIST, DynamicProcessor.DIRECT_LIST_CODEC);
 	}
 	
 	private void onServerAboutToStart(ServerAboutToStartEvent event)
