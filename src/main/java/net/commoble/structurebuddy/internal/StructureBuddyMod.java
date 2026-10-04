@@ -181,13 +181,13 @@ public class StructureBuddyMod
 				stringBuilder.append(String.format(
 					"* %s delegates to\n",
 					Optionull.mapOrDefault(
-						parentHolder.getKey(),
+						parentHolder.key(),
 						key -> key.identifier().toString(),
 						parentHolder.toString())));
 			}
 			stringBuilder.append(String.format(
 				"* %s",
-				Optionull.mapOrDefault(holder.getKey(), key -> key.identifier().toString(), holder.toString())));
+				Optionull.mapOrDefault(holder.key(), key -> key.identifier().toString(), holder.toString())));
 			throw new IllegalStateException(stringBuilder.toString());
 		}
 		
