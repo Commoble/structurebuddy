@@ -2,6 +2,7 @@ package net.commoble.structurebuddy.internal;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.SequencedSet;
 import java.util.Set;
 import java.util.function.Function;
@@ -63,14 +64,19 @@ import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
 @Mod(StructureBuddy.MODID)
 @ApiStatus.Internal
 public class StructureBuddyMod
-{	
+{
+	private static IEventBus getModBus()
+	{
+		return Objects.requireNonNull(ModList.get().getModContainerById(StructureBuddy.MODID).get().getEventBus());
+	}
+	
 	/**
 	 * Mod constructor for StructureBuddy
 	 */
 	@ApiStatus.Internal
 	public StructureBuddyMod()
 	{
-		IEventBus modBus = ModList.get().getModContainerById(StructureBuddy.MODID).get().getEventBus();
+		IEventBus modBus = getModBus();
 		IEventBus forgeBus = NeoForge.EVENT_BUS;
 		
 		// vanilla registries
@@ -127,7 +133,7 @@ public class StructureBuddyMod
 	private static <T, R extends DeferredRegister<T>> R defreg(Function<String, R> regFactory)
 	{
 		R register = regFactory.apply(StructureBuddy.MODID);
-		register.register(ModList.get().getModContainerById(StructureBuddy.MODID).get().getEventBus());
+		register.register(getModBus());
 		return register;
 	}
 	
@@ -135,7 +141,7 @@ public class StructureBuddyMod
 	{
 		DeferredRegister<T> register = DeferredRegister.create(registryKey, StructureBuddy.MODID);
 		register.makeRegistry(builder->{});
-		register.register(ModList.get().getModContainerById(StructureBuddy.MODID).get().getEventBus());
+		register.register(getModBus());
 		return register;
 	}
 	
